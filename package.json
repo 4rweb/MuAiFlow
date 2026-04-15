@@ -1,0 +1,43 @@
+{
+  "name": "muaiflow",
+  "version": "1.0.0",
+  "description": "Multi-AI workflow framework — structured plan → cross-review → human approval → execution pipeline for AI coding agents",
+  "keywords": [
+    "ai",
+    "workflow",
+    "multi-ai",
+    "code-review",
+    "plan",
+    "agents",
+    "codex",
+    "claude",
+    "crush",
+    "human-in-the-loop"
+  ],
+  "author": "4rweb",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/4rweb/MuAiFlow.git"
+  },
+  "homepage": "https://github.com/4rweb/MuAiFlow#readme",
+  "bugs": {
+    "url": "https://github.com/4rweb/MuAiFlow/issues"
+  },
+  "bin": {
+    "muaiflow": "bin/muaiflow.js"
+  },
+  "files": [
+    "bin/",
+    ".ai/",
+    "skills/",
+    "examples/",
+    "install.sh",
+    "muaiflow-file-ref.vsix",
+    "LICENSE",
+    "README.md"
+  ],
+  "scripts": {
+    "postinstall": "node bin/postinstall.js"
+  }
+}

@@ -106,15 +106,52 @@ After installing, **reload VS Code** (`Cmd+Shift+P` → "Reload Window").
 
 ---
 
-## Install as Skill (recommended)
+## Quick Start
 
-Install the full workflow or individual skills via [skills.sh](https://skills.sh):
+### Install via package manager (recommended)
 
 ```bash
-# Install the complete MuAiFlow workflow
-npx skills add 4rweb/MuAiFlow --skill muai-workflow
+# pnpm
+pnpm add -D muaiflow
 
-# Or install individual skills
+# npm
+npm install --save-dev muaiflow
+
+# yarn
+yarn add -D muaiflow
+```
+
+On install, MuAiFlow automatically copies the `.ai/` directory into your project. To update templates later:
+
+```bash
+pnpm update muaiflow
+npx muaiflow init --force   # overwrite .ai/ with latest templates
+```
+
+Then add a project instruction file:
+
+```bash
+npx muaiflow examples       # copies AGENTS.md.example and CLAUDE.md.example
+mv AGENTS.md.example AGENTS.md   # for Codex CLI
+# or
+mv CLAUDE.md.example CLAUDE.md   # for Claude Code
+```
+
+### CLI commands
+
+```bash
+npx muaiflow init [--force]   # Copy/overwrite .ai/ into your project
+npx muaiflow examples         # Copy example AGENTS.md and CLAUDE.md
+npx muaiflow version          # Show installed version
+npx muaiflow help             # Show help
+```
+
+### Install as Skill
+
+Install individual workflow skills via [skills.sh](https://skills.sh):
+
+```bash
+npx skills add 4rweb/MuAiFlow --skill muai-workflow
 npx skills add 4rweb/MuAiFlow --skill muai-plan-generator
 npx skills add 4rweb/MuAiFlow --skill muai-cross-review
 npx skills add 4rweb/MuAiFlow --skill muai-executor
@@ -138,21 +175,11 @@ npx skills add 4rweb/MuAiFlow --list
 | `muai-code-review` | Final code review after plan execution |
 | `muai-smart-router` | Routes tasks to optimal model tiers (reasoning/standard/fast) |
 
----
-
-## Quick Start (manual)
-
-### 1. Copy `.ai/` into your project
+### Manual install (no package manager)
 
 ```bash
 cp -r .ai/ /path/to/your-project/.ai/
-```
 
-### 2. Add a project instruction file
-
-Copy and customize one of the examples:
-
-```bash
 # For Claude Code
 cp examples/CLAUDE.md.example /path/to/your-project/CLAUDE.md
 
@@ -160,35 +187,15 @@ cp examples/CLAUDE.md.example /path/to/your-project/CLAUDE.md
 cp examples/AGENTS.md.example /path/to/your-project/AGENTS.md
 ```
 
-### 3. (Optional) Prepare context for large reference data
+---
 
-Shell commands have token limits. When your task involves DB schemas, API response examples, or business rules that are too long to paste into a command, use `.ai/plans/context.md`:
+## Usage
 
-```bash
-# Edit context.md with your reference data BEFORE running the plan command
-# Examples of what to put there:
-# - DB table definitions
-# - Real API response JSON (shows null fields, date formats, numeric-as-string quirks)
-# - Paths to finished modules to use as patterns
-# - Business rules too long for the command line
-```
+### Prepare context (optional)
 
-Then reference it at the end of your plan generation command:
+When your task involves large reference data (DB schemas, API payloads, business rules), put it in `.ai/plans/context.md` before running the plan command.
 
-```bash
-codex "Follow .ai/prompts/plan-generation.prompt.md to fill .ai/plans/$(date +%Y-%m-%d)-my-feature.md \
-  with a plan to [describe task]. Read .ai/plans/context.md for additional context."
-```
-
-### 4. (Optional) Install the VS Code extension
-
-```bash
-bash install.sh
-```
-
-This installs the file reference extension — type `@` in any `.md` file to quickly reference project files in your plans.
-
-### 5. Create your first plan
+### Create your first plan
 
 ```bash
 cd your-project
@@ -204,7 +211,7 @@ codex "Follow .ai/prompts/plan-generation.prompt.md to fill .ai/plans/$(date +%Y
 "Follow .ai/prompts/plan-generation.prompt.md to fill .ai/plans/$(date +%Y-%m-%d)-my-feature.md with a plan to [describe your task]"
 ```
 
-### 6. Cross-review with another AI
+### Cross-review with another AI
 
 ```bash
 # Claude Code (type in chat):
@@ -214,7 +221,7 @@ codex "Follow .ai/prompts/plan-generation.prompt.md to fill .ai/plans/$(date +%Y
 crush run "Follow .ai/prompts/multi-ai-review.prompt.md to validate .ai/plans/$(date +%Y-%m-%d)-my-feature.md"
 ```
 
-### 7. Approve (humans only)
+### Approve (humans only)
 
 Open the plan file and fill in the frontmatter:
 
@@ -225,7 +232,7 @@ human_approved_at: 2025-01-15T10:00:00-03:00
 human_notes: looks good, go ahead
 ```
 
-### 8. Execute
+### Execute
 
 ```bash
 codex "Follow .ai/prompts/execute-approved-plan.prompt.md to execute .ai/plans/$(date +%Y-%m-%d)-my-feature.md"
