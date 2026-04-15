@@ -14,7 +14,13 @@ When you generate or execute a MuAiFlow plan, this skill helps the AI assign eac
 
 ## Install
 
-### Global (works in all projects)
+### Via skills.sh (recommended)
+
+```bash
+npx skills add 4rweb/MuAiFlow --skill muai-smart-router
+```
+
+### Manual — Global (works in all projects)
 
 ```bash
 mkdir -p ~/.claude/skills/muai-smart-router

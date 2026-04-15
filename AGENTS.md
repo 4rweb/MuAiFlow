@@ -7,6 +7,7 @@
 MuAiFlow is a **workflow framework** (not an application) — a set of prompts, templates, and scripts to structure multi-AI collaboration with a human-in-the-loop approval gate. There is no server to run. The deliverables are:
 
 - `.ai/` — the workflow directory users copy into their own projects
+- `skills/` — installable skills via `npx skills add` (skills.sh platform)
 - `vscode-extension/` — a VS Code extension that inserts `@file` references in markdown
 - `examples/` — template `AGENTS.md` and `CLAUDE.md` files users customize for their own projects
 - `install.sh` — installs the `.vsix` extension via the `code` CLI
@@ -14,6 +15,15 @@ MuAiFlow is a **workflow framework** (not an application) — a set of prompts, 
 ## Directory Structure
 
 ```
+skills/                         # Installable via `npx skills add 4rweb/MuAiFlow`
+├── muai-workflow/SKILL.md      # Complete workflow
+├── muai-plan-generator/SKILL.md
+├── muai-cross-review/SKILL.md
+├── muai-executor/SKILL.md
+├── muai-handoff/SKILL.md
+├── muai-code-review/SKILL.md
+└── muai-smart-router/SKILL.md
+
 .ai/
 ├── plans/
 │   ├── TEMPLATE.md          # The canonical plan format — DO NOT change frontmatter keys
@@ -26,11 +36,7 @@ MuAiFlow is a **workflow framework** (not an application) — a set of prompts, 
 
 examples/
 ├── AGENTS.md.example        # Template for Codex CLI users
-├── CLAUDE.md.example        # Template for Claude Code users
-└── skills/
-    └── muai-smart-router/   # Example skill for model tier routing
-        ├── SKILL.md
-        └── README.md
+└── CLAUDE.md.example        # Template for Claude Code users
 
 vscode-extension/
 ├── src/extension.ts         # Single-file VS Code extension (TypeScript)
@@ -88,13 +94,16 @@ The `@` keystroke is detected via a text change listener, not a VS Code `Complet
 VS Code silently skips `code --install-extension` if the same version is already installed. Always bump `version` in `package.json` before repackaging. Use `--force` flag as well.
 
 ### TEMPLATE.md tasks have an optional `model` field
-Each task block in `.ai/plans/TEMPLATE.md` supports `- **Model**: reasoning | standard | fast`. This drives smart model routing — the planner AI recommends a tier per task, the executor maps tiers to provider-specific models. The field is optional; omitting it defaults to `standard`. See `examples/skills/muai-smart-router/` for an example skill.
+Each task block in `.ai/plans/TEMPLATE.md` supports `- **Model**: reasoning | standard | fast`. This drives smart model routing — the planner AI recommends a tier per task, the executor maps tiers to provider-specific models. The field is optional; omitting it defaults to `standard`. Install the routing skill: `npx skills add 4rweb/MuAiFlow --skill muai-smart-router`.
 
 ### Token optimization guide lives in SETUP.md
 `.ai/SETUP.md` → "Token Optimization" section covers: context audit checklist, what loads when (by tool), compaction strategies, hook optimization, and model routing strategy. Reference this when users report high token usage.
 
 ### Orchestration patterns documented in SETUP.md
 `.ai/SETUP.md` → "Orchestration Patterns" section documents 5 patterns: file-based handoff, MCP bridge, CLI delegation, parallel execution with git worktrees, and brain+hands split. Each has when-to-use, pros/cons, and MuAiFlow integration points.
+
+### Skills are installable via skills.sh
+The `skills/` directory at repo root contains skills compatible with the [skills.sh](https://skills.sh) platform. Each subdirectory has a `SKILL.md` with `name` and `description` in YAML frontmatter. Users install via `npx skills add 4rweb/MuAiFlow --skill <name>`. When adding a new skill, create it in `skills/<slug>/SKILL.md` — skills.sh only reads from the `skills/` root directory.
 
 ### The `.vsix` is committed to the repo
 `muaiflow-file-ref.vsix` is the distributable extension binary. It is tracked in git. After `npm run package`, the new `.vsix` replaces the old one and should be committed.

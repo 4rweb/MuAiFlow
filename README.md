@@ -106,7 +106,41 @@ After installing, **reload VS Code** (`Cmd+Shift+P` → "Reload Window").
 
 ---
 
-## Quick Start
+## Install as Skill (recommended)
+
+Install the full workflow or individual skills via [skills.sh](https://skills.sh):
+
+```bash
+# Install the complete MuAiFlow workflow
+npx skills add 4rweb/MuAiFlow --skill muai-workflow
+
+# Or install individual skills
+npx skills add 4rweb/MuAiFlow --skill muai-plan-generator
+npx skills add 4rweb/MuAiFlow --skill muai-cross-review
+npx skills add 4rweb/MuAiFlow --skill muai-executor
+npx skills add 4rweb/MuAiFlow --skill muai-handoff
+npx skills add 4rweb/MuAiFlow --skill muai-code-review
+npx skills add 4rweb/MuAiFlow --skill muai-smart-router
+
+# List all available skills
+npx skills add 4rweb/MuAiFlow --list
+```
+
+### Available Skills
+
+| Skill | Description |
+|-------|-------------|
+| `muai-workflow` | Complete multi-AI workflow (plan → review → approve → execute) |
+| `muai-plan-generator` | Generates structured implementation plans with tasks and dependencies |
+| `muai-cross-review` | Reviews plans from another AI with evidence-based validation |
+| `muai-executor` | Executes human-approved plans following dependency order |
+| `muai-handoff` | Resumes work when switching between AI agents |
+| `muai-code-review` | Final code review after plan execution |
+| `muai-smart-router` | Routes tasks to optimal model tiers (reasoning/standard/fast) |
+
+---
+
+## Quick Start (manual)
 
 ### 1. Copy `.ai/` into your project
 
@@ -202,6 +236,15 @@ codex "Follow .ai/prompts/execute-approved-plan.prompt.md to execute .ai/plans/$
 ## Directory Structure
 
 ```
+skills/                              # Installable via `npx skills add`
+├── muai-workflow/SKILL.md           # Complete workflow
+├── muai-plan-generator/SKILL.md     # Plan generation
+├── muai-cross-review/SKILL.md       # Cross-review validation
+├── muai-executor/SKILL.md           # Plan execution
+├── muai-handoff/SKILL.md            # Handoff between AIs
+├── muai-code-review/SKILL.md        # Final code review
+└── muai-smart-router/SKILL.md       # Model tier routing
+
 .ai/
 ├── README.md                        # Quick reference
 ├── SETUP.md                         # Full documentation
@@ -315,7 +358,7 @@ Each task in a MuAiFlow plan can specify a **model tier** — so you don't waste
 | `standard`  | Business logic, endpoints         | Implement CRUD service |
 | `fast`      | Boilerplate, tests, styles, docs  | Generate i18n file     |
 
-See the [muai-smart-router](examples/skills/muai-smart-router/) example skill for automated routing.
+Install the routing skill: `npx skills add 4rweb/MuAiFlow --skill muai-smart-router`
 
 ### Token Optimization
 
