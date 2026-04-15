@@ -1,0 +1,44 @@
+{
+  "name": "muaiflow-file-ref",
+  "displayName": "MuAiFlow File Reference",
+  "description": "Type @ in any .md file to get file path autocomplete from your workspace",
+  "version": "1.0.0",
+  "publisher": "muaiflow",
+  "engines": { "vscode": "^1.85.0" },
+  "categories": ["Other"],
+  "keywords": ["markdown", "file reference", "autocomplete", "muaiflow"],
+  "activationEvents": [],
+  "main": "./out/extension.js",
+  "contributes": {
+    "configuration": {
+      "title": "MuAiFlow File Reference",
+      "properties": {
+        "muaiflow.fileRef.include": {
+          "type": "string",
+          "default": "**/*.{ts,tsx,js,jsx,json,md,yml,yaml,sh,css,scss,sql,html}",
+          "description": "Glob pattern for files to include in @ autocomplete"
+        },
+        "muaiflow.fileRef.exclude": {
+          "type": "string",
+          "default": "**/node_modules/**,**/.git/**,**/dist/**,**/out/**,**/.next/**,**/build/**",
+          "description": "Glob patterns to exclude (comma-separated)"
+        },
+        "muaiflow.fileRef.includeDirectories": {
+          "type": "boolean",
+          "default": true,
+          "description": "Include directories in autocomplete suggestions"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.85.0",
+    "typescript": "^5.3.0"
+  }
+}

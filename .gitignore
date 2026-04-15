@@ -21,3 +21,6 @@ node_modules/
 
 # Test results cache
 .ai/test-results.txt
+vscode-extension/node_modules/
+vscode-extension/out/
+vscode-extension/*.vsix
