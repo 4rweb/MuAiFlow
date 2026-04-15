@@ -1,8 +1,8 @@
 # context.md - Plan Context File
 
-This is the editable working copy for the current planning task.
-Paste large reference material here before generating a plan, then reset it from
-`.ai/plans/CONTEXT_TEMPLATE.md` with `npx muaiflow context --force` when needed.
+Use this file as a scratchpad for large reference material before generating a plan.
+Keep project-specific data in `.ai/plans/context.md`; recover this skeleton with
+`npx muaiflow context --force` when you want a clean context file.
 
 ---
 

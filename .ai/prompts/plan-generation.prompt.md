@@ -13,7 +13,7 @@ You will generate an implementation plan. Follow the template at `.ai/plans/TEMP
 
 1. **Read the template**: `.ai/plans/TEMPLATE.md`
 2. **Read the project conventions**: `CLAUDE.md` or `AGENTS.md` (depending on which tool you are)
-3. **Read `.ai/plans/context.md` if it exists** — this file contains large reference material (DB schemas, API response examples, business rules) that the human placed there because it was too large to include in the command. Treat it as authoritative context for this task.
+3. **Read `.ai/plans/context.md` if it exists** — this file contains large reference material (DB schemas, API response examples, business rules) that the human placed there because it was too large to include in the command. Treat it as authoritative context for this task. The reusable skeleton lives at `.ai/plans/CONTEXT_TEMPLATE.md`.
 4. **Explore the code**: Before citing any file, verify it exists and read the relevant content. Never cite a path you haven't confirmed.
 5. **Check dependencies**: If the task touches a DB schema, verify if a migration is needed. If it touches `.env`, check `.env.example`.
 
@@ -55,4 +55,4 @@ For **each file** listed in the tasks section:
 - Set `status` to `DRAFT` in the frontmatter
 - Fill `last_updated_at`
 - In the Handoff section, fill: `Last AI`, `Next step` = "awaiting validation from another AI"
-- Notify the human: "Plan generated at `.ai/plans/YYYY-MM-DD-title.md`, status DRAFT. Recommend asking another AI to validate using `.ai/prompts/multi-ai-review.prompt.md`."
+- Notify the human with the exact plan path, for example: "Plan generated at `.ai/plans/tracked/YYYY-MM-DD-title.md`, status DRAFT. Recommend asking another AI to validate using `.ai/prompts/multi-ai-review.prompt.md`."

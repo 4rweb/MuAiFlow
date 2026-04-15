@@ -14,10 +14,12 @@
 
 Shell commands have token limits. When your plan needs DB schemas, API response examples,
 or any large reference material, put it in `.ai/plans/context.md` and reference it in the command.
+The reusable skeleton lives at `.ai/plans/CONTEXT_TEMPLATE.md`; reset the working copy with
+`npx muaiflow context --force`.
 
 ```bash
 # Instead of stuffing everything into the command:
-codex "Follow .ai/prompts/plan-generation.prompt.md to fill .ai/plans/2025-01-15-my-feature.md
+codex "Follow .ai/prompts/plan-generation.prompt.md to fill .ai/plans/tracked/2025-01-15-my-feature.md
        with a plan to [describe task]. Read .ai/plans/context.md for additional context."
 ```
 
@@ -30,33 +32,37 @@ Edit `.ai/plans/context.md` with your schema, payloads, and rules before running
 
 ### Generate a plan
 ```bash
+npx muaiflow plan my-feature --tracked   # .ai/plans/tracked/YYYY-MM-DD-my-feature.md
+npx muaiflow plan my-feature --local     # .ai/plans/local/YYYY-MM-DD-my-feature.md
+npx muaiflow context                     # create context.md if missing
+
 # Codex
-codex "Follow .ai/prompts/plan-generation.prompt.md to fill .ai/plans/YYYY-MM-DD-title.md with a plan to [describe task]"
+codex "Follow .ai/prompts/plan-generation.prompt.md to fill .ai/plans/tracked/YYYY-MM-DD-title.md with a plan to [describe task]"
 
 # Claude Code / Crush — type in chat or use crush run "..."
-"Follow .ai/prompts/plan-generation.prompt.md to fill .ai/plans/YYYY-MM-DD-title.md with a plan to [describe task]"
+"Follow .ai/prompts/plan-generation.prompt.md to fill .ai/plans/tracked/YYYY-MM-DD-title.md with a plan to [describe task]"
 ```
 
 ### Cross-review
 ```bash
-"Follow .ai/prompts/multi-ai-review.prompt.md to validate .ai/plans/YYYY-MM-DD-title.md"
+"Follow .ai/prompts/multi-ai-review.prompt.md to validate .ai/plans/tracked/YYYY-MM-DD-title.md"
 ```
 
 ### Execute (after human approval)
 ```bash
-"Follow .ai/prompts/execute-approved-plan.prompt.md to execute .ai/plans/YYYY-MM-DD-title.md"
+"Follow .ai/prompts/execute-approved-plan.prompt.md to execute .ai/plans/tracked/YYYY-MM-DD-title.md"
 ```
 
 ### Handoff (switching AIs mid-task)
 ```bash
 bash .ai/scripts/handoff.sh [ai-name]
 # Then in the next AI:
-"Follow .ai/prompts/handoff-resume.prompt.md to resume .ai/plans/YYYY-MM-DD-title.md"
+"Follow .ai/prompts/handoff-resume.prompt.md to resume the plan path reported by handoff.sh"
 ```
 
 ### Final code review (optional)
 ```bash
-"Follow .ai/prompts/final-code-review.prompt.md to review code from .ai/plans/YYYY-MM-DD-title.md"
+"Follow .ai/prompts/final-code-review.prompt.md to review code from .ai/plans/tracked/YYYY-MM-DD-title.md"
 ```
 
 ## Prompt reference

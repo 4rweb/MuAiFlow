@@ -20,7 +20,7 @@ MuAiFlow is a structured workflow for using multiple AI agents collaboratively, 
 ### Standard Flow (starts with Codex)
 
 ```
-[CODEX] Generate plan in .ai/plans/YYYY-MM-DD-title.md  →  status: DRAFT
+[CODEX] Generate plan in .ai/plans/tracked/YYYY-MM-DD-title.md  →  status: DRAFT
     ↓
 [CLAUDE CODE or CRUSH] Validate and improve plan  →  status: AI_REVIEWED
     ↓
@@ -69,8 +69,14 @@ MuAiFlow is a structured workflow for using multiple AI agents collaboratively, 
 ├── SETUP.md                           # This file — full documentation
 ├── plans/
 │   ├── TEMPLATE.md                    # Template — copy for each new plan
+│   ├── CONTEXT_TEMPLATE.md            # Reusable skeleton for context.md
+│   ├── context.md                     # User working copy for large reference data
+│   ├── tracked/
+│   │   └── YYYY-MM-DD-title.md        # Git-tracked plans
+│   ├── local/
+│   │   └── YYYY-MM-DD-title.md        # Git-ignored local plans
 │   ├── .gitkeep
-│   └── YYYY-MM-DD-title.md           # Generated plans
+│   └── .gitignore
 ├── prompts/
 │   ├── plan-generation.prompt.md      # Generate plan from requirement
 │   ├── multi-ai-review.prompt.md      # Cross-review a plan
@@ -153,7 +159,7 @@ DRAFT → AI_REVIEWED → HUMAN_APPROVED → EXECUTING → DONE
 3. **Cross-review required** when the plan involves: database migrations/schema, authentication/authorization, external integrations, large refactors (> 5 files), changes across multiple services, or when an AI is taking over execution from another AI.
 4. **Cross-review optional** for: docs, small fixes (< 3 files), isolated single-module changes, chores.
 5. **Handoff required** when switching AI tools — fill the Handoff section of the plan.
-6. **Plans go in `.ai/plans/`** — standardized format with status tracking.
+6. **Plans go in `.ai/plans/tracked/` or `.ai/plans/local/`** — standardized format with status tracking. Pass the exact path to each AI prompt.
 7. **Fallback order**: Codex → Claude Code → Crush → Copilot (assistive only).
 
 ### When cross-review is required
@@ -187,42 +193,49 @@ DRAFT → AI_REVIEWED → HUMAN_APPROVED → EXECUTING → DONE
 ### Creating a new plan
 
 ```bash
-# Copy the template
-cp .ai/plans/TEMPLATE.md .ai/plans/$(date +%Y-%m-%d)-feature-title.md
+# Create a tracked plan
+npx muaiflow plan feature-title --tracked
+
+# Or create a private local plan ignored by Git
+npx muaiflow plan feature-title --local
 
 # Ask AI to fill it in using the generation prompt
-codex "Follow .ai/prompts/plan-generation.prompt.md to fill .ai/plans/YYYY-MM-DD-title.md with a plan to [describe task]"
+codex "Follow .ai/prompts/plan-generation.prompt.md to fill .ai/plans/tracked/YYYY-MM-DD-feature-title.md with a plan to [describe task]"
 ```
 
 #### Providing large context (schemas, payloads, rules)
 
 Shell commands have token limits — you can't paste a DB schema, a JSON payload example, and a business rule list into a single command without hitting errors.
 
-The solution is `.ai/plans/context.md`: a free-form file you populate **before** running the command, and reference at the end of the command:
+The solution is `.ai/plans/context.md`: a free-form working copy you populate **before** running the command, and reference at the end of the command. The reusable skeleton lives at `.ai/plans/CONTEXT_TEMPLATE.md`.
 
 ```bash
-# 1. Edit .ai/plans/context.md with your large reference data:
+# 1. Create or reset the working context file when needed:
+npx muaiflow context
+npx muaiflow context --force
+
+# 2. Edit .ai/plans/context.md with your large reference data:
 #    - DB schema excerpts
 #    - Real API response examples (shows null fields, date formats, numeric-as-string quirks)
 #    - Finished module paths to use as patterns
 #    - Business rules that are too long for the command line
 
-# 2. Then run:
-codex "Follow .ai/prompts/plan-generation.prompt.md to fill .ai/plans/$(date +%Y-%m-%d)-feature.md \
+# 3. Then run:
+codex "Follow .ai/prompts/plan-generation.prompt.md to fill .ai/plans/tracked/YYYY-MM-DD-feature.md \
   with a plan to [describe task]. Read .ai/plans/context.md for additional context."
 ```
 
 The generation prompt instructs the AI to read `context.md` automatically if it exists.
-After the plan is generated, you can clear or update `context.md` for the next task.
+After the plan is generated, you can clear, update, or reset `context.md` for the next task.
 
 ### Cross-reviewing a plan
 
 ```bash
 # Claude Code (type in chat)
-"Follow .ai/prompts/multi-ai-review.prompt.md to validate .ai/plans/YYYY-MM-DD-title.md"
+"Follow .ai/prompts/multi-ai-review.prompt.md to validate .ai/plans/tracked/YYYY-MM-DD-title.md"
 
 # Crush
-crush run "Follow .ai/prompts/multi-ai-review.prompt.md to validate .ai/plans/YYYY-MM-DD-title.md"
+crush run "Follow .ai/prompts/multi-ai-review.prompt.md to validate .ai/plans/tracked/YYYY-MM-DD-title.md"
 ```
 
 ### Executing an approved plan
@@ -234,10 +247,10 @@ crush run "Follow .ai/prompts/multi-ai-review.prompt.md to validate .ai/plans/YY
 
 ```bash
 # Codex
-codex "Follow .ai/prompts/execute-approved-plan.prompt.md to execute .ai/plans/YYYY-MM-DD-title.md"
+codex "Follow .ai/prompts/execute-approved-plan.prompt.md to execute .ai/plans/tracked/YYYY-MM-DD-title.md"
 
 # Claude Code fallback (type in chat)
-"Follow .ai/prompts/execute-approved-plan.prompt.md to execute .ai/plans/YYYY-MM-DD-title.md"
+"Follow .ai/prompts/execute-approved-plan.prompt.md to execute .ai/plans/tracked/YYYY-MM-DD-title.md"
 ```
 
 ### Handoff (switching AI tools)
@@ -247,13 +260,13 @@ codex "Follow .ai/prompts/execute-approved-plan.prompt.md to execute .ai/plans/Y
 bash .ai/scripts/handoff.sh [codex|claude|crush]
 
 # The next AI resumes with:
-"Follow .ai/prompts/handoff-resume.prompt.md to resume .ai/plans/YYYY-MM-DD-title.md"
+"Follow .ai/prompts/handoff-resume.prompt.md to resume the plan path reported by handoff.sh"
 ```
 
 ### Final code review (optional)
 
 ```bash
-"Follow .ai/prompts/final-code-review.prompt.md to review code from .ai/plans/YYYY-MM-DD-title.md"
+"Follow .ai/prompts/final-code-review.prompt.md to review code from .ai/plans/tracked/YYYY-MM-DD-title.md"
 ```
 
 ---
@@ -286,7 +299,7 @@ MuAiFlow's file-based protocol supports multiple ways to connect AI agents. Choo
 The simplest approach — no extra tools needed.
 
 ```
-AI #1 generates plan → saves .ai/plans/YYYY-MM-DD-feature.md
+AI #1 generates plan → saves .ai/plans/tracked/YYYY-MM-DD-feature.md
 Human switches to AI #2 → AI #2 reads plan file → cross-reviews
 Human approves → AI #1 or #2 executes
 ```
@@ -321,7 +334,7 @@ claude mcp serve
 The orchestrator AI calls other AIs through their CLI interfaces via shell commands.
 
 ```
-Orchestrator AI → shell → codex "execute task T3 from .ai/plans/feature.md"
+Orchestrator AI → shell → codex "execute task T3 from .ai/plans/tracked/YYYY-MM-DD-feature.md"
 Orchestrator AI → shell → claude "review task T3 output"
 ```
 

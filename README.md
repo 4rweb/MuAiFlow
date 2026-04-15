@@ -125,7 +125,7 @@ On install, MuAiFlow automatically copies the `.ai/` directory into your project
 
 ```bash
 pnpm update muaiflow
-npx muaiflow init --force   # overwrite .ai/ with latest templates
+npx muaiflow init --force   # update .ai/ templates while preserving plans and context
 ```
 
 Then add a project instruction file:
@@ -140,10 +140,13 @@ mv CLAUDE.md.example CLAUDE.md   # for Claude Code
 ### CLI commands
 
 ```bash
-npx muaiflow init [--force]   # Copy/overwrite .ai/ into your project
-npx muaiflow examples         # Copy example AGENTS.md and CLAUDE.md
-npx muaiflow version          # Show installed version
-npx muaiflow help             # Show help
+npx muaiflow init [--force]             # Copy/update .ai/ while preserving plans and context
+npx muaiflow plan <title> --tracked     # Create .ai/plans/tracked/YYYY-MM-DD-title.md
+npx muaiflow plan <title> --local       # Create .ai/plans/local/YYYY-MM-DD-title.md
+npx muaiflow context [--force]          # Create/reset .ai/plans/context.md
+npx muaiflow examples                   # Copy example AGENTS.md and CLAUDE.md
+npx muaiflow version                    # Show installed version
+npx muaiflow help                       # Show help
 ```
 
 ### Install as Skill
@@ -193,32 +196,38 @@ cp examples/AGENTS.md.example /path/to/your-project/AGENTS.md
 
 ### Prepare context (optional)
 
-When your task involves large reference data (DB schemas, API payloads, business rules), put it in `.ai/plans/context.md` before running the plan command.
+When your task involves large reference data (DB schemas, API payloads, business rules), put it in `.ai/plans/context.md` before running the plan command. The reusable skeleton lives at `.ai/plans/CONTEXT_TEMPLATE.md`.
+
+```bash
+npx muaiflow context          # create context.md if missing
+npx muaiflow context --force  # reset context.md from CONTEXT_TEMPLATE.md
+```
 
 ### Create your first plan
 
 ```bash
 cd your-project
 
-# Copy the template
-cp .ai/plans/TEMPLATE.md .ai/plans/$(date +%Y-%m-%d)-my-feature.md
+# Create a plan file
+npx muaiflow plan my-feature --tracked   # .ai/plans/tracked/YYYY-MM-DD-my-feature.md
+npx muaiflow plan my-feature --local     # .ai/plans/local/YYYY-MM-DD-my-feature.md
 
 # Ask an AI to fill it in
 # Codex:
-codex "Follow .ai/prompts/plan-generation.prompt.md to fill .ai/plans/$(date +%Y-%m-%d)-my-feature.md with a plan to [describe your task]"
+codex "Follow .ai/prompts/plan-generation.prompt.md to fill .ai/plans/tracked/YYYY-MM-DD-my-feature.md with a plan to [describe your task]"
 
 # Claude Code: type this message in the chat
-"Follow .ai/prompts/plan-generation.prompt.md to fill .ai/plans/$(date +%Y-%m-%d)-my-feature.md with a plan to [describe your task]"
+"Follow .ai/prompts/plan-generation.prompt.md to fill .ai/plans/tracked/YYYY-MM-DD-my-feature.md with a plan to [describe your task]"
 ```
 
 ### Cross-review with another AI
 
 ```bash
 # Claude Code (type in chat):
-"Follow .ai/prompts/multi-ai-review.prompt.md to validate .ai/plans/$(date +%Y-%m-%d)-my-feature.md"
+"Follow .ai/prompts/multi-ai-review.prompt.md to validate .ai/plans/tracked/YYYY-MM-DD-my-feature.md"
 
 # Crush:
-crush run "Follow .ai/prompts/multi-ai-review.prompt.md to validate .ai/plans/$(date +%Y-%m-%d)-my-feature.md"
+crush run "Follow .ai/prompts/multi-ai-review.prompt.md to validate .ai/plans/tracked/YYYY-MM-DD-my-feature.md"
 ```
 
 ### Approve (humans only)
@@ -235,7 +244,7 @@ human_notes: looks good, go ahead
 ### Execute
 
 ```bash
-codex "Follow .ai/prompts/execute-approved-plan.prompt.md to execute .ai/plans/$(date +%Y-%m-%d)-my-feature.md"
+codex "Follow .ai/prompts/execute-approved-plan.prompt.md to execute .ai/plans/tracked/YYYY-MM-DD-my-feature.md"
 ```
 
 ---
@@ -257,8 +266,12 @@ skills/                              # Installable via `npx skills add`
 ├── SETUP.md                         # Full documentation
 ├── plans/
 │   ├── TEMPLATE.md                  # Copy this for each new plan
-│   ├── context.md                   # Large reference data (schema, payloads, rules)
-│   └── YYYY-MM-DD-feature-name.md  # Generated plans
+│   ├── CONTEXT_TEMPLATE.md          # Reusable skeleton for context.md
+│   ├── context.md                   # User working copy for large reference data
+│   ├── tracked/
+│   │   └── YYYY-MM-DD-feature-name.md  # Git-tracked plans
+│   └── local/
+│       └── YYYY-MM-DD-feature-name.md  # Git-ignored local plans
 ├── prompts/
 │   ├── plan-generation.prompt.md    # Instruct AI to generate a plan
 │   ├── multi-ai-review.prompt.md    # Instruct AI to cross-review a plan
@@ -324,7 +337,7 @@ If an AI runs out of tokens or you want to switch tools:
 bash .ai/scripts/handoff.sh codex
 
 # The next AI resumes with:
-"Follow .ai/prompts/handoff-resume.prompt.md to resume .ai/plans/YYYY-MM-DD-plan.md"
+"Follow .ai/prompts/handoff-resume.prompt.md to resume the plan path reported by handoff.sh"
 ```
 
 ---

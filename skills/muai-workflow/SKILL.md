@@ -23,7 +23,7 @@ You follow a structured plan→review→approve→execute pipeline. No AI can ex
 
 ## Plan Format
 
-Plans live in `.ai/plans/YYYY-MM-DD-title.md` using this frontmatter:
+Plans live in `.ai/plans/tracked/YYYY-MM-DD-title.md` for tracked work or `.ai/plans/local/YYYY-MM-DD-title.md` for private local work, using this frontmatter:
 
 ```yaml
 ---
@@ -50,7 +50,7 @@ DRAFT → AI_REVIEWED → HUMAN_APPROVED → EXECUTING → DONE
 
 1. Read `.ai/plans/TEMPLATE.md` for the full template
 2. Read project conventions (CLAUDE.md or AGENTS.md)
-3. Read `.ai/plans/context.md` if it exists (large reference data)
+3. Read `.ai/plans/context.md` if it exists (large reference data; reusable skeleton at `.ai/plans/CONTEXT_TEMPLATE.md`)
 4. Verify every file path you cite actually exists
 5. Set `status: DRAFT`, fill `author`, `branch`, `created_at`
 6. Set `review_required: true` for: DB changes, auth, external APIs, refactors > 5 files

@@ -10,13 +10,13 @@ You generate structured implementation plans. Each plan is a Markdown file with 
 ## Before Writing
 
 1. Read the project conventions (`CLAUDE.md`, `AGENTS.md`, or equivalent)
-2. Read `.ai/plans/context.md` if it exists — it contains large reference data the human placed there for this task
+2. Read `.ai/plans/context.md` if it exists — it contains large reference data the human placed there for this task. Reset the reusable skeleton from `.ai/plans/CONTEXT_TEMPLATE.md` with `npx muaiflow context --force` when needed.
 3. Explore the code: verify every file path before citing it. Never reference a path you haven't confirmed exists.
 4. Check dependencies: if the task touches a DB schema, verify migration needs. If it touches `.env`, check `.env.example`.
 
 ## Plan Format
 
-Create the file at `.ai/plans/YYYY-MM-DD-title.md`:
+Create or fill the exact plan path requested by the human. New tracked plans usually live at `.ai/plans/tracked/YYYY-MM-DD-title.md`; local private plans live at `.ai/plans/local/YYYY-MM-DD-title.md`.
 
 ```yaml
 ---
@@ -83,4 +83,4 @@ Set `false` only for: docs, small fixes (< 3 files), chores.
 1. Set `status: DRAFT`
 2. Fill `last_updated_at`
 3. Leave `human_approved_by` and `human_approved_at` **empty** — only humans fill these
-4. Notify: "Plan generated at `.ai/plans/YYYY-MM-DD-title.md`, status DRAFT. Recommend cross-review before approval."
+4. Notify with the exact path: "Plan generated at `.ai/plans/tracked/YYYY-MM-DD-title.md`, status DRAFT. Recommend cross-review before approval."

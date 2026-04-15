@@ -8,7 +8,7 @@ MuAiFlow is a **workflow framework** (not an application) — a set of prompts, 
 
 - `.ai/` — the workflow directory, auto-copied to user projects on `pnpm add muaiflow`
 - `skills/` — installable skills via `npx skills add` (skills.sh platform)
-- `bin/` — CLI (`npx muaiflow init/examples/version`) and postinstall script
+- `bin/` — CLI (`npx muaiflow init/plan/context/examples/version`) and postinstall script
 - `vscode-extension/` — a VS Code extension that inserts `@file` references in markdown
 - `examples/` — template `AGENTS.md` and `CLAUDE.md` files users customize for their own projects
 - `package.json` — npm package manifest (enables `pnpm add -D muaiflow` and `pnpm update muaiflow`)
@@ -28,8 +28,11 @@ skills/                         # Installable via `npx skills add 4rweb/MuAiFlow
 
 .ai/
 ├── plans/
-│   ├── TEMPLATE.md          # The canonical plan format — DO NOT change frontmatter keys
-│   └── context.md           # User-populated large-context file (schemas, payloads, rules)
+│   ├── TEMPLATE.md              # The canonical plan format — DO NOT change frontmatter keys
+│   ├── CONTEXT_TEMPLATE.md      # Reusable skeleton for context.md
+│   ├── context.md               # User-populated working copy; ignored in new projects
+│   ├── tracked/.gitkeep         # Git-tracked plans live here
+│   └── local/.gitignore         # Local private plans live here and are ignored
 ├── prompts/                 # One prompt per workflow phase — tool-agnostic
 ├── scripts/
 │   └── handoff.sh           # Generates a handoff snapshot (git status, plan state)
@@ -41,7 +44,7 @@ examples/
 └── CLAUDE.md.example        # Template for Claude Code users
 
 bin/
-├── muaiflow.js              # CLI: npx muaiflow init/examples/version/help
+├── muaiflow.js              # CLI: npx muaiflow init/plan/context/examples/version/help
 └── postinstall.js           # Auto-copies .ai/ on npm install
 
 vscode-extension/
@@ -80,10 +83,13 @@ Or simply `bash install.sh` from the repo root.
 **No AI, under any circumstances, can set `status: HUMAN_APPROVED` or fill `human_approved_by`.** This is enforced by convention, not code. Any prompt, template, or script change that could enable an AI to set this status is a breaking change and must be rejected.
 
 ### `TEMPLATE.md` frontmatter keys are a contract
-The YAML frontmatter in `.ai/plans/TEMPLATE.md` is parsed by `handoff.sh` with regex patterns like `grep -oP '(?<=^status: ).*'`. Changing key names breaks the script. Adding new keys is safe; renaming or removing existing ones is not.
+The YAML frontmatter in `.ai/plans/TEMPLATE.md` is parsed by `handoff.sh`. Changing key names breaks the script. Adding new keys is safe; renaming or removing existing ones is not.
 
 ### `context.md` is ephemeral user data — keep it generic
-The file at `.ai/plans/context.md` is designed to hold per-task reference data (DB schemas, API payloads, business rules) that the user replaces before each plan. Do not add logic or structure that assumes its contents — it is intentionally free-form.
+The file at `.ai/plans/context.md` is designed to hold per-task reference data (DB schemas, API payloads, business rules) that the user replaces before each plan. Keep reusable structure in `.ai/plans/CONTEXT_TEMPLATE.md`; do not add logic or structure that assumes the working copy contents.
+
+### Tracked and local plan folders
+New tracked plans go in `.ai/plans/tracked/`; private scratch plans go in `.ai/plans/local/` and are ignored. Preserve legacy top-level plan files for existing users, but document the tracked/local folders for new flows.
 
 ### Prompts are tool-agnostic by design
 All prompts in `.ai/prompts/` must work with any AI tool that can read files. No framework names, no tool-specific syntax, no hardcoded file paths beyond the `.ai/` directory. This is a contribution requirement.
@@ -113,7 +119,7 @@ Each task block in `.ai/plans/TEMPLATE.md` supports `- **Model**: reasoning | st
 The `skills/` directory at repo root contains skills compatible with the [skills.sh](https://skills.sh) platform. Each subdirectory has a `SKILL.md` with `name` and `description` in YAML frontmatter. Users install via `npx skills add 4rweb/MuAiFlow --skill <name>`. When adding a new skill, create it in `skills/<slug>/SKILL.md` — skills.sh only reads from the `skills/` root directory.
 
 ### npm package (`muaiflow`)
-The root `package.json` makes MuAiFlow installable via `pnpm add -D muaiflow`. On install, `bin/postinstall.js` auto-copies `.ai/` into the user's project (skips if `.ai/` already exists). Users update via `pnpm update muaiflow` + `npx muaiflow init --force`. The `bin/muaiflow.js` CLI provides `init`, `examples`, `version`, and `help` commands. Bump `version` in the root `package.json` before publishing. The `files` array controls what gets included in the npm tarball — keep it in sync when adding new directories.
+The root `package.json` makes MuAiFlow installable via `pnpm add -D muaiflow`. On install, `bin/postinstall.js` auto-copies `.ai/` into the user's project while preserving user plans and `context.md`. Users update via `pnpm update muaiflow` + `npx muaiflow init --force`. The `bin/muaiflow.js` CLI provides `init`, `plan`, `context`, `examples`, `version`, and `help` commands. Bump `version` in the root `package.json` before publishing. The `files` array controls what gets included in the npm tarball — keep it in sync when adding new directories.
 
 ### The `.vsix` is committed to the repo
 `muaiflow-file-ref.vsix` is the distributable extension binary. It is tracked in git. After `npm run package`, the new `.vsix` replaces the old one and should be committed.

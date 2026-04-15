@@ -2,6 +2,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { copyManagedDir, ensureContextFile, ensurePlanGitignore } = require('./lib/workflow-files');
 
 const args = process.argv.slice(2);
 const command = args[0];
@@ -11,10 +12,13 @@ function printHelp() {
   muaiflow — Multi-AI Workflow Framework
 
   Usage:
-    npx muaiflow init [--force]   Copy .ai/ directory into your project
-    npx muaiflow examples         Copy example AGENTS.md and CLAUDE.md
-    npx muaiflow version          Show installed version
-    npx muaiflow help             Show this help
+    npx muaiflow init [--force]             Copy/update .ai/ without deleting plans or context
+    npx muaiflow plan <title> [--tracked]   Create a tracked plan in .ai/plans/tracked/
+    npx muaiflow plan <title> --local       Create a local ignored plan in .ai/plans/local/
+    npx muaiflow context [--force]          Create/reset .ai/plans/context.md from CONTEXT_TEMPLATE.md
+    npx muaiflow examples                   Copy example AGENTS.md and CLAUDE.md
+    npx muaiflow version                    Show installed version
+    npx muaiflow help                       Show this help
 
   More info: https://github.com/4rweb/MuAiFlow
 `);
@@ -25,36 +29,110 @@ function getVersion() {
   return pkg.version;
 }
 
-function copyDir(srcDir, destDir) {
-  fs.mkdirSync(destDir, { recursive: true });
-  for (const entry of fs.readdirSync(srcDir, { withFileTypes: true })) {
-    const srcPath = path.join(srcDir, entry.name);
-    const destPath = path.join(destDir, entry.name);
-    if (entry.isDirectory()) {
-      copyDir(srcPath, destPath);
-    } else {
-      fs.copyFileSync(srcPath, destPath);
-    }
-  }
-}
-
 function init(force) {
   const src = path.resolve(__dirname, '..', '.ai');
   const dest = path.resolve(process.cwd(), '.ai');
+  const isUpdate = fs.existsSync(dest);
 
-  if (fs.existsSync(dest) && !force) {
+  if (isUpdate && !force) {
     console.log('\n  .ai/ already exists. Use --force to overwrite.\n');
     return;
   }
 
-  if (force && fs.existsSync(dest)) {
-    fs.rmSync(dest, { recursive: true });
-  }
+  copyManagedDir(src, dest);
+  ensurePlanGitignore(dest);
+  ensureContextFile(dest);
 
-  copyDir(src, dest);
-  console.log('\n  .ai/ directory created in your project.');
+  if (isUpdate) {
+    console.log('\n  .ai/ directory updated in your project.');
+  } else {
+    console.log('\n  .ai/ directory created in your project.');
+  }
+  console.log('  Existing plans and context.md are preserved.');
   console.log('  Next: run `npx muaiflow examples` to copy AGENTS.md / CLAUDE.md templates.');
   console.log('  Docs: .ai/SETUP.md\n');
+}
+
+function pad2(value) {
+  return String(value).padStart(2, '0');
+}
+
+function formatLocalDate(date) {
+  return `${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}`;
+}
+
+function slugifyTitle(title) {
+  const slug = title
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+
+  return slug || 'plan';
+}
+
+function requireAiTemplate(templatePath) {
+  if (!fs.existsSync(templatePath)) {
+    console.error('\n  Missing template: ' + templatePath);
+    console.error('  Run `npx muaiflow init` first.\n');
+    process.exit(1);
+  }
+}
+
+function createPlan(commandArgs) {
+  const local = commandArgs.includes('--local');
+  const tracked = commandArgs.includes('--tracked');
+  const force = commandArgs.includes('--force');
+  const title = commandArgs.filter((arg) => !arg.startsWith('--')).join(' ').trim();
+
+  if (local && tracked) {
+    console.error('\n  Choose either --tracked or --local, not both.\n');
+    process.exit(1);
+  }
+
+  if (!title) {
+    console.error('\n  Usage: npx muaiflow plan <title> [--tracked|--local] [--force]\n');
+    process.exit(1);
+  }
+
+  const aiDir = path.resolve(process.cwd(), '.ai');
+  const templatePath = path.join(aiDir, 'plans', 'TEMPLATE.md');
+  requireAiTemplate(templatePath);
+
+  const planDir = path.join(aiDir, 'plans', local ? 'local' : 'tracked');
+  const fileName = `${formatLocalDate(new Date())}-${slugifyTitle(title)}.md`;
+  const destPath = path.join(planDir, fileName);
+
+  fs.mkdirSync(planDir, { recursive: true });
+
+  if (fs.existsSync(destPath) && !force) {
+    console.error('\n  Plan already exists: ' + path.relative(process.cwd(), destPath));
+    console.error('  Use --force to overwrite.\n');
+    process.exit(1);
+  }
+
+  fs.copyFileSync(templatePath, destPath);
+  console.log('\n  Plan created: ' + path.relative(process.cwd(), destPath));
+  console.log('  Next: ask an AI to fill it using .ai/prompts/plan-generation.prompt.md\n');
+}
+
+function createContext(force) {
+  const plansDir = path.resolve(process.cwd(), '.ai', 'plans');
+  const templatePath = path.join(plansDir, 'CONTEXT_TEMPLATE.md');
+  const contextPath = path.join(plansDir, 'context.md');
+
+  requireAiTemplate(templatePath);
+
+  if (fs.existsSync(contextPath) && !force) {
+    console.log('\n  context.md already exists and was preserved.');
+    console.log('  Use `npx muaiflow context --force` to reset it from CONTEXT_TEMPLATE.md.\n');
+    return;
+  }
+
+  fs.copyFileSync(templatePath, contextPath);
+  console.log('\n  context.md created from CONTEXT_TEMPLATE.md.');
+  console.log('  Edit .ai/plans/context.md before generating a plan.\n');
 }
 
 function examples() {
@@ -76,6 +154,12 @@ function examples() {
 switch (command) {
   case 'init':
     init(args.includes('--force'));
+    break;
+  case 'plan':
+    createPlan(args.slice(1));
+    break;
+  case 'context':
+    createContext(args.includes('--force'));
     break;
   case 'examples':
     examples();

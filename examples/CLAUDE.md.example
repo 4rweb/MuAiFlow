@@ -42,5 +42,5 @@ npm run db:migrate # database migrations
 - **⚠️ No AI sets `HUMAN_APPROVED`** — human only
 - If `human_approved_by` is empty → **STOP**
 - Cross-review required: DB, auth, external APIs, refactors > 5 files
-- Plans: `.ai/plans/TEMPLATE.md`
+- Plans: `.ai/plans/tracked/` or `.ai/plans/local/`; template: `.ai/plans/TEMPLATE.md`
 - Model tiers per task: `reasoning | standard | fast` (see `.ai/SETUP.md` → Token Optimization)

@@ -1,0 +1,10 @@
+# Per-task context is user workspace data.
+context.md
+
+# Legacy top-level generated plans are user workspace data.
+????-??-??-*.md
+
+# Local plans are private scratch files by default.
+local/*
+!local/
+!local/.gitignore

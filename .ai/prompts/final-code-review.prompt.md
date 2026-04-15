@@ -13,7 +13,7 @@ After a plan has been executed (status DONE or about to change to DONE), another
 
 ### Step 1: Read context
 
-1. Read the plan at `.ai/plans/YYYY-MM-DD-title.md` — understand what was done
+1. Read the exact plan path provided for review — usually `.ai/plans/tracked/YYYY-MM-DD-title.md` or `.ai/plans/local/YYYY-MM-DD-title.md`; older plans may still live directly under `.ai/plans/`. Understand what was done.
 2. Run `bash .ai/scripts/handoff.sh [your-name]` to see the current state
 3. Identify the modified/created files
 

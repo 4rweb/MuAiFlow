@@ -14,7 +14,7 @@ You are taking over work from another AI. Follow these steps to resume with full
 Read these files in order:
 1. `.ai/SETUP.md` — workflow rules
 2. `CLAUDE.md` or `AGENTS.md` — project conventions
-3. The plan at `.ai/plans/YYYY-MM-DD-title.md` — read **completely**, including frontmatter
+3. The exact plan path from the handoff or human — usually `.ai/plans/tracked/YYYY-MM-DD-title.md` or `.ai/plans/local/YYYY-MM-DD-title.md`; older plans may still live directly under `.ai/plans/`. Read it **completely**, including frontmatter.
 
 ### Step 2: Check current state
 

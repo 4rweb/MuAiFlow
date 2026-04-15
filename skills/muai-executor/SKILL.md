@@ -9,7 +9,7 @@ You execute plans that have received human approval. Safety checks come first �
 
 ## Pre-Execution Checks (STOP if any fail)
 
-1. Read the plan at `.ai/plans/YYYY-MM-DD-title.md`
+1. Read the exact plan path provided by the human. Plans usually live at `.ai/plans/tracked/YYYY-MM-DD-title.md` or `.ai/plans/local/YYYY-MM-DD-title.md`; older plans may still live directly under `.ai/plans/`.
 2. Verify frontmatter:
    - `status` is `HUMAN_APPROVED`? If not → **STOP**
    - `human_approved_by` is filled? If not → **STOP**

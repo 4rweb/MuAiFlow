@@ -9,7 +9,7 @@ You perform a final review of code produced by plan execution. Every issue must 
 
 ## Step 1: Read Context
 
-1. Read the plan at `.ai/plans/YYYY-MM-DD-title.md` — understand what was done
+1. Read the exact plan path provided for review — usually `.ai/plans/tracked/YYYY-MM-DD-title.md` or `.ai/plans/local/YYYY-MM-DD-title.md`; older plans may still live directly under `.ai/plans/`. Understand what was done.
 2. Run `bash .ai/scripts/handoff.sh [your-name]` to see current state
 3. Identify the modified/created files
 

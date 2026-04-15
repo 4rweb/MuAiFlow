@@ -11,18 +11,41 @@ set -euo pipefail
 AI_NAME="${1:-unknown}"
 BRANCH="$(git branch --show-current 2>/dev/null || echo 'unknown')"
 
+latest_plan_file() {
+  {
+    find .ai/plans -maxdepth 1 -type f -name '????-??-??-*.md' 2>/dev/null || true
+    find .ai/plans/tracked -maxdepth 1 -type f -name '????-??-??-*.md' 2>/dev/null || true
+    find .ai/plans/local -maxdepth 1 -type f -name '????-??-??-*.md' 2>/dev/null || true
+  } | while IFS= read -r file; do
+    mtime="$(date -r "$file" '+%s' 2>/dev/null || stat -c '%Y' "$file" 2>/dev/null || echo 0)"
+    printf '%s\t%s\n' "$mtime" "$file"
+  done | sort -rn | sed -n '1s/^[^	]*	//p'
+}
+
+extract_field() {
+  local prefix="$1"
+  local file="$2"
+  local fallback="${3:-?}"
+  local value
+
+  value="$(awk -v prefix="$prefix" 'index($0, prefix) == 1 { print substr($0, length(prefix) + 1); found=1; exit } END { if (!found) exit 1 }' "$file" 2>/dev/null || true)"
+  if [ -n "$value" ]; then
+    printf '%s' "$value"
+  else
+    printf '%s' "$fallback"
+  fi
+}
+
 # Find most recent plan
 LATEST_PLAN=""
 PLAN_STATUS=""
 PLAN_NEXT_STEP=""
 PLAN_BLOCKERS=""
-if compgen -G ".ai/plans/????-??-??-*.md" > /dev/null 2>&1; then
-  LATEST_PLAN=$(ls -t .ai/plans/????-??-??-*.md 2>/dev/null | head -1)
-  if [ -n "$LATEST_PLAN" ]; then
-    PLAN_STATUS=$(grep -oP '(?<=^status: ).*' "$LATEST_PLAN" 2>/dev/null || echo "?")
-    PLAN_NEXT_STEP=$(grep -oP '(?<=\*\*Next step\*\*: ).*' "$LATEST_PLAN" 2>/dev/null || echo "?")
-    PLAN_BLOCKERS=$(grep -oP '(?<=\*\*Blockers\*\*: ).*' "$LATEST_PLAN" 2>/dev/null || echo "none")
-  fi
+LATEST_PLAN="$(latest_plan_file)"
+if [ -n "$LATEST_PLAN" ]; then
+  PLAN_STATUS="$(extract_field "status: " "$LATEST_PLAN" "?")"
+  PLAN_NEXT_STEP="$(extract_field "- **Next step**: " "$LATEST_PLAN" "?")"
+  PLAN_BLOCKERS="$(extract_field "- **Blockers**: " "$LATEST_PLAN" "none")"
 fi
 
 echo "========================================="
@@ -42,7 +65,7 @@ if [ -n "$LATEST_PLAN" ]; then
   echo "Next:    $PLAN_NEXT_STEP"
   echo "Blocked: $PLAN_BLOCKERS"
 else
-  echo "(none found in .ai/plans/)"
+  echo "(none found in .ai/plans/, .ai/plans/tracked/, or .ai/plans/local/)"
 fi
 echo ""
 
