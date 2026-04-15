@@ -1,7 +1,7 @@
 # MuAiFlow — Multi-AI Workflow
 
 <p align="center">
-  <img src="mu.jpeg" alt="MuAiFlow" width="600" />
+  <img src="Mu.jpeg" alt="MuAiFlow" width="600" />
 </p>
 
 > A structured workflow for collaborating with multiple AI agents on software projects, with mandatory cross-review and a **human-in-the-loop** approval gate before execution.
@@ -55,11 +55,11 @@ MuAiFlow is **tool-agnostic** — it works with any AI agent that can read files
 
 Here are some examples, but you can use any AI tools in any role:
 
-| Example setup | Planner | Reviewer | Executor |
-|---------------|---------|----------|----------|
-| Codex-first | Codex CLI | Claude Code or Crush | Codex CLI |
-| Claude-first | Claude Code | Crush or Codex CLI | Claude Code |
-| Crush-first | Crush | Claude Code or Codex CLI | Crush |
+| Example setup | Planner     | Reviewer                 | Executor    |
+| ------------- | ----------- | ------------------------ | ----------- |
+| Codex-first   | Codex CLI   | Claude Code or Crush     | Codex CLI   |
+| Claude-first  | Claude Code | Crush or Codex CLI       | Claude Code |
+| Crush-first   | Crush       | Claude Code or Codex CLI | Crush       |
 
 The only requirement is that **the reviewer must be a different AI than the planner** — the whole point is a second pair of eyes.
 
@@ -98,11 +98,11 @@ After installing, **reload VS Code** (`Cmd+Shift+P` → "Reload Window").
 
 ### Configuration
 
-| Setting | Default | Description |
-|---------|---------|-------------|
-| `muaiflow.fileRef.include` | `**/*` | Glob pattern for files to include |
-| `muaiflow.fileRef.exclude` | `**/node_modules/**,**/.git/**,**/dist/**,**/out/**,**/.next/**,**/build/**` | Glob patterns to exclude (comma-separated) |
-| `muaiflow.fileRef.includeDirectories` | `true` | Include directories in suggestions |
+| Setting                               | Default                                                                      | Description                                |
+| ------------------------------------- | ---------------------------------------------------------------------------- | ------------------------------------------ |
+| `muaiflow.fileRef.include`            | `**/*`                                                                       | Glob pattern for files to include          |
+| `muaiflow.fileRef.exclude`            | `**/node_modules/**,**/.git/**,**/dist/**,**/out/**,**/.next/**,**/build/**` | Glob patterns to exclude (comma-separated) |
+| `muaiflow.fileRef.includeDirectories` | `true`                                                                       | Include directories in suggestions         |
 
 ---
 
@@ -140,6 +140,7 @@ Shell commands have token limits. When your task involves DB schemas, API respon
 ```
 
 Then reference it at the end of your plan generation command:
+
 ```bash
 codex "Follow .ai/prompts/plan-generation.prompt.md to fill .ai/plans/$(date +%Y-%m-%d)-my-feature.md \
   with a plan to [describe task]. Read .ai/plans/context.md for additional context."
@@ -238,29 +239,29 @@ DRAFT → AI_REVIEWED → HUMAN_APPROVED → EXECUTING → DONE
        AI_REVIEWED
 ```
 
-| Status | Who sets it |
-|--------|-------------|
-| `DRAFT` | AI that wrote the plan |
-| `AI_REVIEWED` | Reviewing AI |
-| `CHANGES_REQUESTED` | Reviewing AI |
-| `HUMAN_APPROVED` | ⚠️ **Human only** |
-| `EXECUTING` | Executing AI |
-| `BLOCKED` | Executing AI |
-| `DONE` | Executing AI |
+| Status              | Who sets it            |
+| ------------------- | ---------------------- |
+| `DRAFT`             | AI that wrote the plan |
+| `AI_REVIEWED`       | Reviewing AI           |
+| `CHANGES_REQUESTED` | Reviewing AI           |
+| `HUMAN_APPROVED`    | ⚠️ **Human only**      |
+| `EXECUTING`         | Executing AI           |
+| `BLOCKED`           | Executing AI           |
+| `DONE`              | Executing AI           |
 
 ---
 
 ## When is cross-review required?
 
-| Condition | Required? |
-|-----------|-----------|
-| Database migrations or schema changes | ✅ Required |
+| Condition                                    | Required?   |
+| -------------------------------------------- | ----------- |
+| Database migrations or schema changes        | ✅ Required |
 | Authentication / authorization / permissions | ✅ Required |
-| External API integrations | ✅ Required |
-| Refactor touching > 5 files | ✅ Required |
-| Changes across multiple apps/services | ✅ Required |
-| AI taking over execution from another AI | ✅ Required |
-| Docs, small tweaks (< 3 files), chores | Optional |
+| External API integrations                    | ✅ Required |
+| Refactor touching > 5 files                  | ✅ Required |
+| Changes across multiple apps/services        | ✅ Required |
+| AI taking over execution from another AI     | ✅ Required |
+| Docs, small tweaks (< 3 files), chores       | Optional    |
 
 ---
 
@@ -282,12 +283,12 @@ bash .ai/scripts/handoff.sh codex
 
 MuAiFlow is designed to let you allocate each task to the tool where it makes the most sense — both in quality and cost. Here's a practical guide:
 
-| Task | Best tool for | Why |
-|------|---------------|-----|
-| **Planning** | Your highest-limit tool (e.g. Codex CLI) | Plans are token-heavy — generation + iteration. Use the tool where tokens are cheap or unlimited. |
-| **Cross-review** | Your strongest reasoning tool (e.g. Claude, Opus) | Reviews are short but high-value. This is where catching a subtle bug saves hours. Worth the premium tokens. |
-| **Execution** | Your highest-limit tool (e.g. Codex CLI) | Execution is the most token-intensive phase. Use the tool with the deepest budget. |
-| **Debugging hard problems** | Your strongest reasoning tool | When you're truly stuck, a fresh perspective from a stronger model pays for itself. |
+| Task                        | Best tool for                                     | Why                                                                                                          |
+| --------------------------- | ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| **Planning**                | Your highest-limit tool (e.g. Codex CLI)          | Plans are token-heavy — generation + iteration. Use the tool where tokens are cheap or unlimited.            |
+| **Cross-review**            | Your strongest reasoning tool (e.g. Claude, Opus) | Reviews are short but high-value. This is where catching a subtle bug saves hours. Worth the premium tokens. |
+| **Execution**               | Your highest-limit tool (e.g. Codex CLI)          | Execution is the most token-intensive phase. Use the tool with the deepest budget.                           |
+| **Debugging hard problems** | Your strongest reasoning tool                     | When you're truly stuck, a fresh perspective from a stronger model pays for itself.                          |
 
 ### Example: maximizing a limited Claude budget
 
@@ -308,11 +309,11 @@ The beauty of MuAiFlow is that **the workflow doesn't change** regardless of whi
 
 Each task in a MuAiFlow plan can specify a **model tier** — so you don't waste your strongest (most expensive) model on mechanical work:
 
-| Tier | Use for | Example |
-|------|---------|---------|
-| `reasoning` | Architecture, debugging, security | Design auth flow |
-| `standard` | Business logic, endpoints | Implement CRUD service |
-| `fast` | Boilerplate, tests, styles, docs | Generate i18n file |
+| Tier        | Use for                           | Example                |
+| ----------- | --------------------------------- | ---------------------- |
+| `reasoning` | Architecture, debugging, security | Design auth flow       |
+| `standard`  | Business logic, endpoints         | Implement CRUD service |
+| `fast`      | Boilerplate, tests, styles, docs  | Generate i18n file     |
 
 See the [muai-smart-router](examples/skills/muai-smart-router/) example skill for automated routing.
 
