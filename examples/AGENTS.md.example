@@ -1,0 +1,70 @@
+# AGENTS.md
+
+> Copy this file to your project root as `AGENTS.md` and customize it.
+> This file is read automatically by Codex CLI.
+
+## Project Overview
+
+[Describe your project — what it does, what stack it uses, what the main components are.]
+
+---
+
+## Commonly Used Commands
+
+```bash
+# Development
+npm run dev
+
+# Build
+npm run build
+
+# Tests
+npm test
+
+# Database
+npm run db:migrate
+npm run db:generate
+
+# Lint
+npm run lint
+```
+
+---
+
+## Architecture
+
+[Describe your folder structure and key modules.]
+
+---
+
+## Key Patterns
+
+[Describe the main patterns Codex should follow when writing code for this project:
+- How auth works
+- How DB queries are written
+- How API responses are structured
+- Naming conventions
+- What NOT to do]
+
+---
+
+## Important Notes
+
+- [critical rules the AI must follow]
+- [things that should never be done]
+- [env file locations]
+
+---
+
+## Multi-AI Workflow
+
+**Canonical source**: `.ai/SETUP.md` — read that file for complete rules.
+
+### Critical rules
+- **⚠️ No AI can change status to HUMAN_APPROVED** — only the human
+- If `human_approved_by` is empty → **STOP before executing**
+- **Cross-review required** for: DB, auth, external integrations, refactors > 5 files
+- Plans in `.ai/plans/` using template `.ai/plans/TEMPLATE.md`
+- Cross-review: `.ai/prompts/multi-ai-review.prompt.md`
+- Handoff when switching AI: `bash .ai/scripts/handoff.sh`
+- Fallback order: Codex → Claude Code → Crush

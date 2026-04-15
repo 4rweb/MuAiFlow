@@ -1,0 +1,94 @@
+# CLAUDE.md
+
+> Copy this file to your project root as `CLAUDE.md` and customize it.
+> This file is read automatically by Claude Code.
+
+## Project Overview
+
+[Describe your project — what it does, what stack it uses, what the main components are.]
+
+Example:
+> MyApp is a SaaS platform built as a Node.js monorepo with:
+> - **api** — Express + Prisma (port 3001)
+> - **web** — Next.js App Router (port 3000)
+> - **worker** — background job processor
+
+---
+
+## Commonly Used Commands
+
+```bash
+# Development
+npm run dev          # Start all services
+npm run dev:api      # API only
+npm run dev:web      # Web only
+
+# Build
+npm run build
+
+# Tests
+npm test
+npm run test:coverage
+
+# Database
+npm run db:migrate   # Apply pending migrations
+npm run db:generate  # Generate migrations from schema
+npm run db:studio    # Open DB GUI
+
+# Lint
+npm run lint
+```
+
+---
+
+## Architecture
+
+[Describe your folder structure, key modules, important files.]
+
+```
+src/
+├── modules/
+│   ├── users/
+│   ├── auth/
+│   └── [your modules]
+├── shared/
+└── ...
+```
+
+### Naming Conventions
+- [your conventions — e.g. camelCase for variables, PascalCase for classes]
+- [database column naming — e.g. snake_case]
+- [file naming — e.g. kebab-case]
+
+---
+
+## Key Patterns
+
+### Authentication
+[Describe how auth works in your project]
+
+### Data Access
+[Describe how DB queries are done — ORM, raw queries, patterns to follow]
+
+### API Conventions
+[Describe endpoint naming, response format, error handling]
+
+---
+
+## Important Notes
+
+- [any gotcha or important rule the AI should know]
+- [env file locations]
+- [things that should never be done — e.g. "never use db:push on production"]
+
+---
+
+## Multi-AI Workflow
+
+**Canonical source**: `.ai/SETUP.md` — read that file for complete rules.
+
+### Critical rules
+- **⚠️ No AI can change status to HUMAN_APPROVED** — only the human
+- If `human_approved_by` is empty → **STOP before executing**
+- **Cross-review required** for: DB, auth, external integrations, refactors > 5 files
+- Plans in `.ai/plans/` using template `.ai/plans/TEMPLATE.md`
