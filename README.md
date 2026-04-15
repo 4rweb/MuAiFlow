@@ -39,14 +39,19 @@ This prevents blind spots, catches architectural mistakes before code is written
 
 ## Supported Tools
 
-| Tool | Role |
-|------|------|
-| **OpenAI Codex CLI** | Plan + Execute (primary) |
-| **Claude Code** | Cross-review + Execute (fallback) |
-| **Crush** | Cross-review + Execute (fallback) |
-| **GitHub Copilot** | Editor suggestions only — does NOT plan or execute |
+MuAiFlow is **tool-agnostic** — it works with any AI agent that can read files and follow instructions. You choose which AI is your primary planner, which one cross-reviews, and which one executes. There is no required combination.
 
-Works with any AI agent that can read files and follow instructions. The prompts are tool-agnostic.
+Here are some examples, but you can use any AI tools in any role:
+
+| Example setup | Planner | Reviewer | Executor |
+|---------------|---------|----------|----------|
+| Codex-first | Codex CLI | Claude Code or Crush | Codex CLI |
+| Claude-first | Claude Code | Crush or Codex CLI | Claude Code |
+| Crush-first | Crush | Claude Code or Codex CLI | Crush |
+
+The only requirement is that **the reviewer must be a different AI than the planner** — the whole point is a second pair of eyes.
+
+> **Note:** GitHub Copilot is assistive only (editor suggestions, PR review). It cannot plan, execute plans, or fill plan frontmatter.
 
 ---
 
