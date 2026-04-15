@@ -104,12 +104,26 @@ try {
   runNode([cli, 'context'], tempRoot);
   assert.strictEqual(read('.ai/plans/context.md', tempRoot), 'custom context', 'context command should preserve existing context');
 
+  runNode([cli, 'context', '--reset'], tempRoot);
+  assert.strictEqual(
+    read('.ai/plans/context.md', tempRoot),
+    read('.ai/plans/CONTEXT_TEMPLATE.md', tempRoot),
+    'context --reset should reset from CONTEXT_TEMPLATE.md'
+  );
+
+  write('.ai/plans/context.md', tempRoot, 'clear me');
+  runNode([cli, 'context', '--clear'], tempRoot);
+  assert.strictEqual(read('.ai/plans/context.md', tempRoot), '', 'context --clear should empty context.md');
+
+  write('.ai/plans/context.md', tempRoot, 'legacy force reset');
   runNode([cli, 'context', '--force'], tempRoot);
   assert.strictEqual(
     read('.ai/plans/context.md', tempRoot),
     read('.ai/plans/CONTEXT_TEMPLATE.md', tempRoot),
-    'context --force should reset from CONTEXT_TEMPLATE.md'
+    'context --force should remain a reset alias for compatibility'
   );
+
+  runNode([cli, 'context', '--reset', '--clear'], tempRoot, { expectFailure: true });
 
   write('.ai/plans/context.md', tempRoot, 'preserve context');
   write('.ai/plans/tracked/2099-01-01-user-plan.md', tempRoot, 'preserve tracked');

@@ -2,7 +2,8 @@
 
 Use this file as a scratchpad for large reference material before generating a plan.
 Keep project-specific data in `.ai/plans/context.md`; recover this skeleton with
-`npx muaiflow context --force` when you want a clean context file.
+`npx muaiflow context --reset` or empty the working copy with
+`npx muaiflow context --clear`.
 
 ---
 

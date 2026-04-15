@@ -143,7 +143,9 @@ mv CLAUDE.md.example CLAUDE.md   # for Claude Code
 npx muaiflow init [--force]             # Copy/update .ai/ while preserving plans and context
 npx muaiflow plan <title> --tracked     # Create .ai/plans/tracked/YYYY-MM-DD-title.md
 npx muaiflow plan <title> --local       # Create .ai/plans/local/YYYY-MM-DD-title.md
-npx muaiflow context [--force]          # Create/reset .ai/plans/context.md
+npx muaiflow context                    # Create .ai/plans/context.md if missing
+npx muaiflow context --reset            # Reset context.md from CONTEXT_TEMPLATE.md
+npx muaiflow context --clear            # Empty context.md
 npx muaiflow examples                   # Copy example AGENTS.md and CLAUDE.md
 npx muaiflow version                    # Show installed version
 npx muaiflow help                       # Show help
@@ -199,8 +201,9 @@ cp examples/AGENTS.md.example /path/to/your-project/AGENTS.md
 When your task involves large reference data (DB schemas, API payloads, business rules), put it in `.ai/plans/context.md` before running the plan command. The reusable skeleton lives at `.ai/plans/CONTEXT_TEMPLATE.md`.
 
 ```bash
-npx muaiflow context          # create context.md if missing
-npx muaiflow context --force  # reset context.md from CONTEXT_TEMPLATE.md
+npx muaiflow context          # create context.md from the template if missing
+npx muaiflow context --reset  # reset context.md from CONTEXT_TEMPLATE.md
+npx muaiflow context --clear  # empty context.md
 ```
 
 ### Create your first plan

@@ -10,7 +10,7 @@ You generate structured implementation plans. Each plan is a Markdown file with 
 ## Before Writing
 
 1. Read the project conventions (`CLAUDE.md`, `AGENTS.md`, or equivalent)
-2. Read `.ai/plans/context.md` if it exists — it contains large reference data the human placed there for this task. Reset the reusable skeleton from `.ai/plans/CONTEXT_TEMPLATE.md` with `npx muaiflow context --force` when needed.
+2. Read `.ai/plans/context.md` if it exists — it contains large reference data the human placed there for this task. Reset the reusable skeleton from `.ai/plans/CONTEXT_TEMPLATE.md` with `npx muaiflow context --reset`, or empty it with `npx muaiflow context --clear`, when needed.
 3. Explore the code: verify every file path before citing it. Never reference a path you haven't confirmed exists.
 4. Check dependencies: if the task touches a DB schema, verify migration needs. If it touches `.env`, check `.env.example`.
 

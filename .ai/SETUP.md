@@ -212,7 +212,8 @@ The solution is `.ai/plans/context.md`: a free-form working copy you populate **
 ```bash
 # 1. Create or reset the working context file when needed:
 npx muaiflow context
-npx muaiflow context --force
+npx muaiflow context --reset
+npx muaiflow context --clear
 
 # 2. Edit .ai/plans/context.md with your large reference data:
 #    - DB schema excerpts
@@ -226,7 +227,7 @@ codex "Follow .ai/prompts/plan-generation.prompt.md to fill .ai/plans/tracked/YY
 ```
 
 The generation prompt instructs the AI to read `context.md` automatically if it exists.
-After the plan is generated, you can clear, update, or reset `context.md` for the next task.
+After the plan is generated, you can update `context.md`, reset it from `CONTEXT_TEMPLATE.md` with `npx muaiflow context --reset`, or empty it with `npx muaiflow context --clear`.
 
 ### Cross-reviewing a plan
 

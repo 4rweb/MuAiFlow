@@ -1,6 +1,6 @@
 {
   "name": "muaiflow",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Multi-AI workflow framework — structured plan → cross-review → human approval → execution pipeline for AI coding agents",
   "keywords": [
     "ai",

@@ -15,7 +15,7 @@
 Shell commands have token limits. When your plan needs DB schemas, API response examples,
 or any large reference material, put it in `.ai/plans/context.md` and reference it in the command.
 The reusable skeleton lives at `.ai/plans/CONTEXT_TEMPLATE.md`; reset the working copy with
-`npx muaiflow context --force`.
+`npx muaiflow context --reset` or empty it with `npx muaiflow context --clear`.
 
 ```bash
 # Instead of stuffing everything into the command:
@@ -35,6 +35,8 @@ Edit `.ai/plans/context.md` with your schema, payloads, and rules before running
 npx muaiflow plan my-feature --tracked   # .ai/plans/tracked/YYYY-MM-DD-my-feature.md
 npx muaiflow plan my-feature --local     # .ai/plans/local/YYYY-MM-DD-my-feature.md
 npx muaiflow context                     # create context.md if missing
+npx muaiflow context --reset             # reset context.md from CONTEXT_TEMPLATE.md
+npx muaiflow context --clear             # empty context.md
 
 # Codex
 codex "Follow .ai/prompts/plan-generation.prompt.md to fill .ai/plans/tracked/YYYY-MM-DD-title.md with a plan to [describe task]"

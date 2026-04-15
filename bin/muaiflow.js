@@ -15,7 +15,9 @@ function printHelp() {
     npx muaiflow init [--force]             Copy/update .ai/ without deleting plans or context
     npx muaiflow plan <title> [--tracked]   Create a tracked plan in .ai/plans/tracked/
     npx muaiflow plan <title> --local       Create a local ignored plan in .ai/plans/local/
-    npx muaiflow context [--force]          Create/reset .ai/plans/context.md from CONTEXT_TEMPLATE.md
+    npx muaiflow context                    Create .ai/plans/context.md from CONTEXT_TEMPLATE.md if missing
+    npx muaiflow context --reset            Reset context.md from CONTEXT_TEMPLATE.md
+    npx muaiflow context --clear            Empty context.md
     npx muaiflow examples                   Copy example AGENTS.md and CLAUDE.md
     npx muaiflow version                    Show installed version
     npx muaiflow help                       Show this help
@@ -117,16 +119,31 @@ function createPlan(commandArgs) {
   console.log('  Next: ask an AI to fill it using .ai/prompts/plan-generation.prompt.md\n');
 }
 
-function createContext(force) {
+function createContext(commandArgs) {
+  const reset = commandArgs.includes('--reset') || commandArgs.includes('--force');
+  const clear = commandArgs.includes('--clear');
   const plansDir = path.resolve(process.cwd(), '.ai', 'plans');
   const templatePath = path.join(plansDir, 'CONTEXT_TEMPLATE.md');
   const contextPath = path.join(plansDir, 'context.md');
 
   requireAiTemplate(templatePath);
 
-  if (fs.existsSync(contextPath) && !force) {
+  if (reset && clear) {
+    console.error('\n  Choose either --reset or --clear, not both.\n');
+    process.exit(1);
+  }
+
+  if (clear) {
+    fs.writeFileSync(contextPath, '');
+    console.log('\n  context.md cleared.');
+    console.log('  Add task-specific context before generating a plan.\n');
+    return;
+  }
+
+  if (fs.existsSync(contextPath) && !reset) {
     console.log('\n  context.md already exists and was preserved.');
-    console.log('  Use `npx muaiflow context --force` to reset it from CONTEXT_TEMPLATE.md.\n');
+    console.log('  Use `npx muaiflow context --reset` to reset it from CONTEXT_TEMPLATE.md.');
+    console.log('  Use `npx muaiflow context --clear` to empty it.\n');
     return;
   }
 
@@ -159,7 +176,7 @@ switch (command) {
     createPlan(args.slice(1));
     break;
   case 'context':
-    createContext(args.includes('--force'));
+    createContext(args.slice(1));
     break;
   case 'examples':
     examples();
