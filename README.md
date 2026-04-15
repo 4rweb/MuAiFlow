@@ -50,6 +50,45 @@ Works with any AI agent that can read files and follow instructions. The prompts
 
 ---
 
+## VS Code Extension — File Reference (`@`)
+
+MuAiFlow includes a VS Code extension that lets you quickly reference project files inside `.md` plan files using `@path/to/file` syntax.
+
+### How it works
+
+- **Type `@` in any Markdown file** → a Quick Pick opens with all workspace files and folders, with a loading spinner while indexing
+- **Press `Cmd+Alt+R`** (Mac) / `Ctrl+Alt+R` (Windows/Linux) → same Quick Pick, without typing `@` first
+- **Select a file** → inserts `@path/to/file` at the cursor position
+- The file list is **cached in memory** and refreshes automatically when files are created or deleted
+
+### Install
+
+```bash
+bash install.sh
+```
+
+Or manually:
+
+```bash
+cd vscode-extension
+npm install
+npm run compile
+vsce package --no-dependencies --allow-missing-repository
+code --install-extension muaiflow-file-ref-*.vsix --force
+```
+
+After installing, **reload VS Code** (`Cmd+Shift+P` → "Reload Window").
+
+### Configuration
+
+| Setting | Default | Description |
+|---------|---------|-------------|
+| `muaiflow.fileRef.include` | `**/*` | Glob pattern for files to include |
+| `muaiflow.fileRef.exclude` | `**/node_modules/**,**/.git/**,**/dist/**,**/out/**,**/.next/**,**/build/**` | Glob patterns to exclude (comma-separated) |
+| `muaiflow.fileRef.includeDirectories` | `true` | Include directories in suggestions |
+
+---
+
 ## Quick Start
 
 ### 1. Copy `.ai/` into your project
@@ -89,7 +128,15 @@ codex "Follow .ai/prompts/plan-generation.prompt.md to fill .ai/plans/$(date +%Y
   with a plan to [describe task]. Read .ai/plans/context.md for additional context."
 ```
 
-### 4. Create your first plan
+### 4. (Optional) Install the VS Code extension
+
+```bash
+bash install.sh
+```
+
+This installs the file reference extension — type `@` in any `.md` file to quickly reference project files in your plans.
+
+### 5. Create your first plan
 
 ```bash
 cd your-project
@@ -105,7 +152,7 @@ codex "Follow .ai/prompts/plan-generation.prompt.md to fill .ai/plans/$(date +%Y
 "Follow .ai/prompts/plan-generation.prompt.md to fill .ai/plans/$(date +%Y-%m-%d)-my-feature.md with a plan to [describe your task]"
 ```
 
-### 4. Cross-review with another AI
+### 6. Cross-review with another AI
 
 ```bash
 # Claude Code (type in chat):
@@ -115,7 +162,7 @@ codex "Follow .ai/prompts/plan-generation.prompt.md to fill .ai/plans/$(date +%Y
 crush run "Follow .ai/prompts/multi-ai-review.prompt.md to validate .ai/plans/$(date +%Y-%m-%d)-my-feature.md"
 ```
 
-### 5. Approve (humans only)
+### 7. Approve (humans only)
 
 Open the plan file and fill in the frontmatter:
 
@@ -126,7 +173,7 @@ human_approved_at: 2025-01-15T10:00:00-03:00
 human_notes: looks good, go ahead
 ```
 
-### 6. Execute
+### 8. Execute
 
 ```bash
 codex "Follow .ai/prompts/execute-approved-plan.prompt.md to execute .ai/plans/$(date +%Y-%m-%d)-my-feature.md"
@@ -152,6 +199,14 @@ codex "Follow .ai/prompts/execute-approved-plan.prompt.md to execute .ai/plans/$
 │   └── final-code-review.prompt.md  # Optional post-execution review
 └── scripts/
     └── handoff.sh                   # Capture context when switching AIs
+
+vscode-extension/
+├── src/extension.ts                 # Extension source (TypeScript)
+├── package.json                     # Manifest, commands, keybindings, config
+└── tsconfig.json
+
+install.sh                           # Installs the .vsix extension via `code` CLI
+muaiflow-file-ref.vsix               # Pre-built extension package
 ```
 
 ---

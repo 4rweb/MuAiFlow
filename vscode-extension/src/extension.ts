@@ -1,82 +1,215 @@
 import * as vscode from 'vscode'
 import * as path from 'path'
 
-export function activate(context: vscode.ExtensionContext) {
-  const command = vscode.commands.registerCommand('muaiflow.insertFileRef', async () => {
-    const workspaceFolder = vscode.workspace.workspaceFolders?.[0]
-    if (!workspaceFolder) {
-      vscode.window.showWarningMessage('MuAiFlow: No workspace folder open.')
-      return
-    }
+interface FileItem extends vscode.QuickPickItem {
+  relativePath: string
+  isDirectory: boolean
+}
 
-    const config = vscode.workspace.getConfiguration('muaiflow.fileRef')
-    const includePattern = config.get<string>(
-      'include',
-      '**/*.{ts,tsx,js,jsx,json,md,yml,yaml,sh,css,scss,sql,html}'
-    )
-    const excludeRaw = config.get<string>(
-      'exclude',
-      '**/node_modules/**,**/.git/**,**/dist/**,**/out/**,**/.next/**,**/build/**'
-    )
-    const includeDirectories = config.get<boolean>('includeDirectories', true)
-    const excludeGlob = `{${excludeRaw.split(',').map(p => p.trim()).join(',')}}`
-    const workspaceRoot = workspaceFolder.uri.fsPath
+let cachedItems: FileItem[] | null = null
+let cachePromise: Promise<FileItem[]> | null = null
 
-    // Build items list
-    const items: vscode.QuickPickItem[] = []
+function getWorkspaceRoot(): vscode.Uri | null {
+  const folders = vscode.workspace.workspaceFolders
+  if (!folders || folders.length === 0) return null
+  return folders[0].uri
+}
 
-    // Directories first
-    if (includeDirectories) {
-      const allFiles = await vscode.workspace.findFiles('**/*', excludeGlob, 5000)
-      const dirs = new Set<string>()
-      for (const file of allFiles) {
-        let dir = path.relative(workspaceRoot, path.dirname(file.fsPath))
-        while (dir && dir !== '.') {
-          dirs.add(dir.split(path.sep).join('/'))
-          dir = path.dirname(dir)
-        }
-      }
-      for (const dir of Array.from(dirs).sort()) {
-        items.push({
-          label: '$(folder) ' + dir + '/',
-          description: 'directory',
-          detail: dir + '/',
-        })
-      }
-    }
+async function buildFileList(): Promise<FileItem[]> {
+  const rootUri = getWorkspaceRoot()
+  if (!rootUri) return []
 
-    // Files
-    const files = await vscode.workspace.findFiles(includePattern, excludeGlob, 2000)
-    const sortedFiles = files
-      .map(f => path.relative(workspaceRoot, f.fsPath).split(path.sep).join('/'))
-      .sort()
+  const config = vscode.workspace.getConfiguration('muaiflow.fileRef')
+  const includeDirectories = config.get<boolean>('includeDirectories', true)
+  const excludeRaw = config.get<string>(
+    'exclude',
+    '**/node_modules/**,**/.git/**,**/dist/**,**/out/**,**/.next/**,**/build/**'
+  )
 
-    for (const rel of sortedFiles) {
-      items.push({
-        label: '$(file) ' + rel,
-        description: 'file',
-        detail: rel,
-      })
-    }
+  const includePattern = new vscode.RelativePattern(rootUri, '**/*')
+  const excludePattern = `{${excludeRaw}}`
 
-    const pick = await vscode.window.showQuickPick(items, {
-      placeHolder: 'Select a file or folder to insert as @reference',
-      matchOnDetail: true,
-      matchOnDescription: false,
+  const uris = await vscode.workspace.findFiles(includePattern, excludePattern, 15000)
+
+  const items: FileItem[] = []
+  const seenDirs = new Set<string>()
+
+  for (const uri of uris) {
+    const relativePath = path.relative(rootUri.fsPath, uri.fsPath).replace(/\\/g, '/')
+
+    items.push({
+      label: `$(file) ${path.basename(uri.fsPath)}`,
+      description: relativePath,
+      relativePath,
+      isDirectory: false
     })
 
-    if (!pick || !pick.detail) return
+    if (includeDirectories) {
+      let dir = path.dirname(relativePath)
+      while (dir && dir !== '.' && !seenDirs.has(dir)) {
+        seenDirs.add(dir)
+        items.push({
+          label: `$(folder) ${path.basename(dir)}`,
+          description: dir,
+          relativePath: dir,
+          isDirectory: true
+        })
+        dir = path.dirname(dir)
+      }
+    }
+  }
 
-    const editor = vscode.window.activeTextEditor
-    if (!editor) return
+  items.sort((a, b) => {
+    if (a.isDirectory !== b.isDirectory) return a.isDirectory ? -1 : 1
+    return a.relativePath.localeCompare(b.relativePath)
+  })
 
-    // Insert @path at cursor
+  return items
+}
+
+async function getFiles(forceRefresh = false): Promise<FileItem[]> {
+  if (!forceRefresh && cachedItems) {
+    return cachedItems
+  }
+
+  if (!forceRefresh && cachePromise) {
+    return cachePromise
+  }
+
+  cachePromise = buildFileList().then(items => {
+    cachedItems = items
+    cachePromise = null
+    return items
+  }).catch(() => {
+    cachePromise = null
+    return []
+  })
+
+  return cachePromise
+}
+
+function invalidateCache() {
+  cachedItems = null
+  cachePromise = null
+}
+
+function refreshCache() {
+  invalidateCache()
+  getFiles().catch(() => {})
+}
+
+async function showFilePicker(editor: vscode.TextEditor) {
+  const quickPick = vscode.window.createQuickPick<FileItem>()
+  quickPick.placeholder = 'Loading workspace files...'
+  quickPick.busy = true
+  quickPick.matchOnDescription = true
+  quickPick.show()
+
+  const items = await getFiles()
+
+  quickPick.items = items
+  quickPick.busy = false
+  quickPick.placeholder = 'Type to filter — select a file or folder to insert @reference'
+
+  quickPick.onDidAccept(() => {
+    const selected = quickPick.selectedItems[0]
+    quickPick.dispose()
+    if (!selected) return
+
+    const reference = `@${selected.relativePath}`
     editor.edit(editBuilder => {
-      editBuilder.insert(editor.selection.active, '@' + pick.detail)
+      if (editor.selection.isEmpty) {
+        editBuilder.insert(editor.selection.active, reference)
+      } else {
+        editBuilder.replace(editor.selection, reference)
+      }
     })
   })
 
-  context.subscriptions.push(command)
+  quickPick.onDidHide(() => quickPick.dispose())
 }
 
-export function deactivate() {}
+async function handleAtTrigger(editor: vscode.TextEditor, atPosition: vscode.Position) {
+  const quickPick = vscode.window.createQuickPick<FileItem>()
+  quickPick.placeholder = 'Loading workspace files...'
+  quickPick.busy = true
+  quickPick.matchOnDescription = true
+  quickPick.show()
+
+  const items = await getFiles()
+
+  quickPick.items = items
+  quickPick.busy = false
+  quickPick.placeholder = 'Select a file or folder to insert @reference'
+
+  quickPick.onDidAccept(() => {
+    const selected = quickPick.selectedItems[0]
+    quickPick.dispose()
+    if (!selected) return
+
+    const replaceRange = new vscode.Range(atPosition, atPosition.translate(0, 1))
+    editor.edit(editBuilder => {
+      editBuilder.replace(replaceRange, `@${selected.relativePath}`)
+    })
+  })
+
+  quickPick.onDidHide(() => quickPick.dispose())
+}
+
+export function activate(context: vscode.ExtensionContext) {
+  getFiles().catch(() => {})
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand('muaiflow.insertFileRef', () => {
+      const editor = vscode.window.activeTextEditor
+      if (!editor) {
+        vscode.window.showWarningMessage('MuAiFlow: No active editor')
+        return
+      }
+      if (editor.document.languageId !== 'markdown') {
+        vscode.window.showWarningMessage('MuAiFlow: Only works in Markdown files')
+        return
+      }
+      showFilePicker(editor)
+    })
+  )
+
+  let atDebounce: ReturnType<typeof setTimeout> | null = null
+  context.subscriptions.push(
+    vscode.workspace.onDidChangeTextDocument(event => {
+      if (event.document.languageId !== 'markdown') return
+      if (event.contentChanges.length === 0) return
+
+      const change = event.contentChanges[0]
+      if (change.text !== '@') return
+
+      const editor = vscode.window.activeTextEditor
+      if (!editor || editor.document !== event.document) return
+
+      const pos = change.range.start
+
+      if (atDebounce) clearTimeout(atDebounce)
+      atDebounce = setTimeout(() => {
+        atDebounce = null
+        handleAtTrigger(editor, pos)
+      }, 100)
+    })
+  )
+
+  const watcher = vscode.workspace.createFileSystemWatcher('**/*')
+  watcher.onDidCreate(() => refreshCache())
+  watcher.onDidDelete(() => refreshCache())
+  context.subscriptions.push(watcher)
+
+  context.subscriptions.push(
+    vscode.workspace.onDidChangeConfiguration(e => {
+      if (e.affectsConfiguration('muaiflow.fileRef')) {
+        refreshCache()
+      }
+    })
+  )
+}
+
+export function deactivate() {
+  invalidateCache()
+}

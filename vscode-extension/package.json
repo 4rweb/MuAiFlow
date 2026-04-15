@@ -2,12 +2,21 @@
   "name": "muaiflow-file-ref",
   "displayName": "MuAiFlow File Reference",
   "description": "Press Cmd+Alt+R in any .md file to pick a file path and insert it as @reference",
-  "version": "1.1.0",
+  "version": "1.9.0",
   "publisher": "muaiflow",
-  "engines": { "vscode": "^1.85.0" },
-  "categories": ["Other"],
-  "keywords": ["markdown", "file reference", "autocomplete", "muaiflow"],
-  "activationEvents": [],
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "keywords": [
+    "markdown",
+    "file reference",
+    "autocomplete",
+    "muaiflow"
+  ],
+  "activationEvents": ["onLanguage:markdown"],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
@@ -29,8 +38,8 @@
       "properties": {
         "muaiflow.fileRef.include": {
           "type": "string",
-          "default": "**/*.{ts,tsx,js,jsx,json,md,yml,yaml,sh,css,scss,sql,html}",
-          "description": "Glob pattern for files to include"
+          "default": "**/*",
+          "description": "Glob pattern for files to include (default: all files)"
         },
         "muaiflow.fileRef.exclude": {
           "type": "string",
