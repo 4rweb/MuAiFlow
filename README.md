@@ -9,11 +9,19 @@
 
 ## Why MuAiFlow?
 
-AI coding agents are powerful individually — but they work even better in a structured pipeline:
+If you've been vibe-coding with AI agents, you've probably hit this wall: you generate a plan with one AI, then manually copy-paste it into another AI for validation, then go back to execute. **You become the middleware** — the human glue between tools that should talk to each other.
 
-- **One AI plans** → **Another AI reviews** → **Human approves** → **AI executes**
+MuAiFlow was born from this exact frustration. Instead of bouncing between tools and burning tokens on copy-paste workflows, it gives you a **file-based protocol** that any AI can read and follow. The plan lives in a Markdown file with structured frontmatter. Any AI that can read files can participate — plan, review, or execute — without you manually transferring context.
 
-This prevents blind spots, catches architectural mistakes before code is written, and keeps the human in control of what gets built.
+### The core idea
+
+- **One AI plans** → **A different AI reviews** → **Human approves** → **AI executes**
+
+Plans get better when a second AI challenges them before code is written. Edge cases surface. Architectural risks get caught. And you stay in control — no AI can execute without your explicit approval.
+
+### The real-world problem it solves
+
+Most developers using AI coding agents face a token budget reality: some tools have generous limits (like Codex CLI), while others burn through tokens fast. MuAiFlow lets you be **strategic** — use your high-limit tool for planning and execution, and reserve your premium tool for the critical review step where its strengths matter most. The workflow adapts to your tools and budget, not the other way around.
 
 ---
 
@@ -263,6 +271,34 @@ bash .ai/scripts/handoff.sh codex
 # The next AI resumes with:
 "Follow .ai/prompts/handoff-resume.prompt.md to resume .ai/plans/YYYY-MM-DD-plan.md"
 ```
+
+---
+
+## Token Strategy — Getting the Most from Your Tools
+
+MuAiFlow is designed to let you allocate each task to the tool where it makes the most sense — both in quality and cost. Here's a practical guide:
+
+| Task | Best tool for | Why |
+|------|---------------|-----|
+| **Planning** | Your highest-limit tool (e.g. Codex CLI) | Plans are token-heavy — generation + iteration. Use the tool where tokens are cheap or unlimited. |
+| **Cross-review** | Your strongest reasoning tool (e.g. Claude, Opus) | Reviews are short but high-value. This is where catching a subtle bug saves hours. Worth the premium tokens. |
+| **Execution** | Your highest-limit tool (e.g. Codex CLI) | Execution is the most token-intensive phase. Use the tool with the deepest budget. |
+| **Debugging hard problems** | Your strongest reasoning tool | When you're truly stuck, a fresh perspective from a stronger model pays for itself. |
+
+### Example: maximizing a limited Claude budget
+
+If your Claude Code tokens run out fast but Codex CLI has generous limits:
+
+```
+Codex  → generate plan        (token-heavy, Codex handles it)
+Claude → cross-review only    (short, surgical, high-value)
+Codex  → execute the plan     (most tokens spent here)
+Claude → only when stuck on a hard bug or architectural decision
+```
+
+This way Claude is reserved for what it does best — critical review and complex reasoning — while Codex handles the volume work. Your Claude budget lasts the whole week instead of one day.
+
+The beauty of MuAiFlow is that **the workflow doesn't change** regardless of which tools you pick. The `.ai/plans/` file is the contract — any AI that reads files can participate.
 
 ---
 
