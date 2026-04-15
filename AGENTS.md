@@ -26,7 +26,11 @@ MuAiFlow is a **workflow framework** (not an application) — a set of prompts, 
 
 examples/
 ├── AGENTS.md.example        # Template for Codex CLI users
-└── CLAUDE.md.example        # Template for Claude Code users
+├── CLAUDE.md.example        # Template for Claude Code users
+└── skills/
+    └── muai-smart-router/   # Example skill for model tier routing
+        ├── SKILL.md
+        └── README.md
 
 vscode-extension/
 ├── src/extension.ts         # Single-file VS Code extension (TypeScript)
@@ -82,6 +86,15 @@ The `@` keystroke is detected via a text change listener, not a VS Code `Complet
 
 ### Version bumping is required for reinstall
 VS Code silently skips `code --install-extension` if the same version is already installed. Always bump `version` in `package.json` before repackaging. Use `--force` flag as well.
+
+### TEMPLATE.md tasks have an optional `model` field
+Each task block in `.ai/plans/TEMPLATE.md` supports `- **Model**: reasoning | standard | fast`. This drives smart model routing — the planner AI recommends a tier per task, the executor maps tiers to provider-specific models. The field is optional; omitting it defaults to `standard`. See `examples/skills/muai-smart-router/` for an example skill.
+
+### Token optimization guide lives in SETUP.md
+`.ai/SETUP.md` → "Token Optimization" section covers: context audit checklist, what loads when (by tool), compaction strategies, hook optimization, and model routing strategy. Reference this when users report high token usage.
+
+### Orchestration patterns documented in SETUP.md
+`.ai/SETUP.md` → "Orchestration Patterns" section documents 5 patterns: file-based handoff, MCP bridge, CLI delegation, parallel execution with git worktrees, and brain+hands split. Each has when-to-use, pros/cons, and MuAiFlow integration points.
 
 ### The `.vsix` is committed to the repo
 `muaiflow-file-ref.vsix` is the distributable extension binary. It is tracked in git. After `npm run package`, the new `.vsix` replaces the old one and should be committed.

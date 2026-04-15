@@ -1,5 +1,9 @@
 # MuAiFlow — Multi-AI Workflow
 
+<p align="center">
+  <img src="mu.jpeg" alt="MuAiFlow" width="600" />
+</p>
+
 > A structured workflow for collaborating with multiple AI agents on software projects, with mandatory cross-review and a **human-in-the-loop** approval gate before execution.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
@@ -299,6 +303,26 @@ Claude → only when stuck on a hard bug or architectural decision
 This way Claude is reserved for what it does best — critical review and complex reasoning — while Codex handles the volume work. Your Claude budget lasts the whole week instead of one day.
 
 The beauty of MuAiFlow is that **the workflow doesn't change** regardless of which tools you pick. The `.ai/plans/` file is the contract — any AI that reads files can participate.
+
+### Smart Model Routing
+
+Each task in a MuAiFlow plan can specify a **model tier** — so you don't waste your strongest (most expensive) model on mechanical work:
+
+| Tier | Use for | Example |
+|------|---------|---------|
+| `reasoning` | Architecture, debugging, security | Design auth flow |
+| `standard` | Business logic, endpoints | Implement CRUD service |
+| `fast` | Boilerplate, tests, styles, docs | Generate i18n file |
+
+See the [muai-smart-router](examples/skills/muai-smart-router/) example skill for automated routing.
+
+### Token Optimization
+
+MuAiFlow includes a complete guide to reducing token waste — from auditing auto-loaded context files to optimizing hooks. See `.ai/SETUP.md` → **Token Optimization**.
+
+### Orchestration Patterns
+
+Beyond the basic plan→review→execute flow, MuAiFlow documents 5 orchestration patterns for connecting multiple AIs: file-based handoff, MCP bridge, CLI delegation, parallel execution with git worktrees, and brain+hands split. See `.ai/SETUP.md` → **Orchestration Patterns**.
 
 ---
 

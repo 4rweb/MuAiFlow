@@ -1,70 +1,46 @@
 # AGENTS.md
 
-> Copy this file to your project root as `AGENTS.md` and customize it.
-> This file is read automatically by Codex CLI.
+<!-- ⚠️ TOKEN WARNING: Every line here is loaded on EVERY Codex session.
+     Keep it under 80 lines. Move detailed guides to skills. -->
+
+> Copy to your project root as `AGENTS.md`. Read automatically by Codex CLI.
 
 ## Project Overview
 
-[Describe your project — what it does, what stack it uses, what the main components are.]
+[1-2 lines: what it does, stack, main components]
 
----
-
-## Commonly Used Commands
+## Commands
 
 ```bash
-# Development
-npm run dev
-
-# Build
-npm run build
-
-# Tests
-npm test
-
-# Database
-npm run db:migrate
-npm run db:generate
-
-# Lint
-npm run lint
+npm run dev        # development
+npm run build      # build
+npm test           # tests
+npm run lint       # lint
+npm run db:migrate # database migrations
 ```
-
----
 
 ## Architecture
 
-[Describe your folder structure and key modules.]
-
----
+[Folder structure and key modules — terse, not prose]
 
 ## Key Patterns
 
-[Describe the main patterns Codex should follow when writing code for this project:
-- How auth works
-- How DB queries are written
-- How API responses are structured
-- Naming conventions
-- What NOT to do]
+- [auth: how it works]
+- [data access: ORM, patterns]
+- [API conventions: naming, response format]
+- [naming: camelCase vars, PascalCase classes, snake_case DB]
 
----
+## Don'ts
 
-## Important Notes
+- [never do X]
+- [never commit .env]
 
-- [critical rules the AI must follow]
-- [things that should never be done]
-- [env file locations]
+## Multi-AI Workflow (MuAiFlow)
 
----
+**Full docs**: `.ai/SETUP.md`
 
-## Multi-AI Workflow
-
-**Canonical source**: `.ai/SETUP.md` — read that file for complete rules.
-
-### Critical rules
-- **⚠️ No AI can change status to HUMAN_APPROVED** — only the human
-- If `human_approved_by` is empty → **STOP before executing**
-- **Cross-review required** for: DB, auth, external integrations, refactors > 5 files
-- Plans in `.ai/plans/` using template `.ai/plans/TEMPLATE.md`
-- Cross-review: `.ai/prompts/multi-ai-review.prompt.md`
-- Handoff when switching AI: `bash .ai/scripts/handoff.sh`
-- Fallback order: Codex → Claude Code → Crush
+- **⚠️ No AI sets `HUMAN_APPROVED`** — human only
+- If `human_approved_by` is empty → **STOP**
+- Cross-review required: DB, auth, external APIs, refactors > 5 files
+- Plans: `.ai/plans/TEMPLATE.md`
+- Model tiers per task: `reasoning | standard | fast` (see `.ai/SETUP.md` → Token Optimization)

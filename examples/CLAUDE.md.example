@@ -1,94 +1,46 @@
 # CLAUDE.md
 
-> Copy this file to your project root as `CLAUDE.md` and customize it.
-> This file is read automatically by Claude Code.
+<!-- ⚠️ TOKEN WARNING: Every line here is loaded on EVERY Claude Code session.
+     Keep it under 80 lines. Move detailed guides to skills (loaded on demand). -->
+
+> Copy to your project root as `CLAUDE.md`. Read automatically by Claude Code.
 
 ## Project Overview
 
-[Describe your project — what it does, what stack it uses, what the main components are.]
+[1-2 lines: what it does, stack, main components]
 
-Example:
-> MyApp is a SaaS platform built as a Node.js monorepo with:
-> - **api** — Express + Prisma (port 3001)
-> - **web** — Next.js App Router (port 3000)
-> - **worker** — background job processor
-
----
-
-## Commonly Used Commands
+## Commands
 
 ```bash
-# Development
-npm run dev          # Start all services
-npm run dev:api      # API only
-npm run dev:web      # Web only
-
-# Build
-npm run build
-
-# Tests
-npm test
-npm run test:coverage
-
-# Database
-npm run db:migrate   # Apply pending migrations
-npm run db:generate  # Generate migrations from schema
-npm run db:studio    # Open DB GUI
-
-# Lint
-npm run lint
+npm run dev        # development
+npm run build      # build
+npm test           # tests
+npm run lint       # lint
+npm run db:migrate # database migrations
 ```
-
----
 
 ## Architecture
 
-[Describe your folder structure, key modules, important files.]
-
-```
-src/
-├── modules/
-│   ├── users/
-│   ├── auth/
-│   └── [your modules]
-├── shared/
-└── ...
-```
-
-### Naming Conventions
-- [your conventions — e.g. camelCase for variables, PascalCase for classes]
-- [database column naming — e.g. snake_case]
-- [file naming — e.g. kebab-case]
-
----
+[Folder structure and key modules — terse, not prose]
 
 ## Key Patterns
 
-### Authentication
-[Describe how auth works in your project]
+- [auth: how it works]
+- [data access: ORM, patterns]
+- [API conventions: naming, response format]
+- [naming: camelCase vars, PascalCase classes, snake_case DB]
 
-### Data Access
-[Describe how DB queries are done — ORM, raw queries, patterns to follow]
+## Don'ts
 
-### API Conventions
-[Describe endpoint naming, response format, error handling]
+- [never do X]
+- [never commit .env]
 
----
+## Multi-AI Workflow (MuAiFlow)
 
-## Important Notes
+**Full docs**: `.ai/SETUP.md`
 
-- [any gotcha or important rule the AI should know]
-- [env file locations]
-- [things that should never be done — e.g. "never use db:push on production"]
-
----
-
-## Multi-AI Workflow
-
-**Canonical source**: `.ai/SETUP.md` — read that file for complete rules.
-
-### Critical rules
-- **⚠️ No AI can change status to HUMAN_APPROVED** — only the human
-- If `human_approved_by` is empty → **STOP before executing**
-- **Cross-review required** for: DB, auth, external integrations, refactors > 5 files
-- Plans in `.ai/plans/` using template `.ai/plans/TEMPLATE.md`
+- **⚠️ No AI sets `HUMAN_APPROVED`** — human only
+- If `human_approved_by` is empty → **STOP**
+- Cross-review required: DB, auth, external APIs, refactors > 5 files
+- Plans: `.ai/plans/TEMPLATE.md`
+- Model tiers per task: `reasoning | standard | fast` (see `.ai/SETUP.md` → Token Optimization)

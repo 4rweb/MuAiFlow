@@ -99,11 +99,18 @@ Include what led to the decision, not just what will be done.]
 
 ## Tasks
 
+<!-- Model tiers (optional field — omit to default to standard):
+  reasoning = complex architecture, planning, critical debugging
+  standard  = business logic, integration, normal implementation
+  fast      = boilerplate, styles, tests, i18n, docs
+  Map tiers to your provider's models in your project's CLAUDE.md or AGENTS.md -->
+
 ### T1: [task title]
 
 - **Type**: feat | fix | refactor | test | chore
 - **Depends on**: [nothing | T2 | T3]
 - **Complexity**: low | medium | high
+- **Model**: reasoning | standard | fast (optional — defaults to standard)
 
 **Files:**
 | Action | Path |
@@ -134,6 +141,7 @@ npm test -- --grep "test name"
 - **Type**: feat | fix | refactor | test | chore
 - **Depends on**: T1
 - **Complexity**: medium
+- **Model**: fast (optional — defaults to standard)
 
 **Files:**
 | Action | Path |

@@ -277,6 +277,111 @@ bash .ai/scripts/handoff.sh [codex|claude|crush]
 
 ---
 
+## Orchestration Patterns
+
+MuAiFlow's file-based protocol supports multiple ways to connect AI agents. Choose the pattern that fits your setup.
+
+### Pattern 1: File-Based Handoff (MuAiFlow default)
+
+The simplest approach — no extra tools needed.
+
+```
+AI #1 generates plan → saves .ai/plans/YYYY-MM-DD-feature.md
+Human switches to AI #2 → AI #2 reads plan file → cross-reviews
+Human approves → AI #1 or #2 executes
+```
+
+**When to use:** Always works. Start here.
+**MuAiFlow integration:** The plan file IS the integration point. Both AIs read/write the same file.
+**Pros:** Universal, no setup, works with any tool
+**Cons:** Manual tool switching
+
+### Pattern 2: MCP Bridge
+
+One AI exposes itself as an MCP server, another connects as client — enabling automated delegation.
+
+```
+Gemini CLI (orchestrator) ←MCP→ Claude Code (executor)
+Gemini plans → delegates coding tasks to Claude via MCP → Claude writes code
+```
+
+**When to use:** When you want one AI to automatically delegate to another without manual switching.
+**MuAiFlow integration:** The orchestrator reads the plan and delegates specific tasks via MCP calls. Each task maps to a MCP tool invocation.
+**Pros:** Automated delegation, no copy-paste
+**Cons:** Requires MCP setup, tool-specific configuration
+
+```bash
+# Example: Claude Code as MCP server
+claude mcp serve
+# Gemini connects and delegates task T3 from the plan
+```
+
+### Pattern 3: CLI Delegation
+
+The orchestrator AI calls other AIs through their CLI interfaces via shell commands.
+
+```
+Orchestrator AI → shell → codex "execute task T3 from .ai/plans/feature.md"
+Orchestrator AI → shell → claude "review task T3 output"
+```
+
+**When to use:** When your AIs have CLI interfaces and you want simple automation.
+**MuAiFlow integration:** Each task in the plan becomes a CLI command. The orchestrator reads task descriptions and builds the command.
+**Pros:** Works with any CLI-based tool, simple to set up
+**Cons:** Context isolation (each CLI call starts fresh), error handling is manual
+
+### Pattern 4: Parallel Execution with Git Worktrees
+
+Multiple AIs work simultaneously on independent tasks, each in an isolated git worktree.
+
+```
+Plan has 5 tasks:
+  T1 (no deps) → AI #1 in worktree-1 (branch: feat/t1)
+  T2 (no deps) → AI #2 in worktree-2 (branch: feat/t2)
+  T3 (depends on T1) → waits
+  T4 (no deps) → AI #3 in worktree-3 (branch: feat/t4)
+  T5 (depends on T2, T4) → waits
+
+After T1 done → T3 starts
+After T2+T4 done → T5 starts
+Final: merge all branches
+```
+
+**When to use:** Plans with many independent tasks. Massive speedup potential.
+**MuAiFlow integration:** Use the `Depends on` field in each task to determine which can run in parallel. Tasks with no dependencies are candidates for parallel execution.
+**Pros:** 2-4x speedup for plans with independent tasks
+**Cons:** Merge conflicts, coordination complexity, requires git worktree setup
+
+```bash
+# Setup worktrees
+git worktree add ../worktree-t1 -b feat/t1
+git worktree add ../worktree-t2 -b feat/t2
+# Run AIs in each worktree simultaneously
+```
+
+### Pattern 5: Brain + Hands Split
+
+One AI (strong reasoning) plans and reviews — never writes code. Another AI (high throughput) executes — follows the plan literally. The plan file is the contract between them.
+
+```
+Brain AI (reasoning tier):
+  → Generates plan with detailed task descriptions
+  → Cross-reviews execution output
+  → Makes architectural decisions
+
+Hands AI (standard/fast tier):
+  → Reads plan, executes tasks in order
+  → Follows instructions literally
+  → Reports blockers back to plan file
+```
+
+**When to use:** When you have a clear split between a premium model (expensive but smart) and a workhorse model (cheap but capable).
+**MuAiFlow integration:** The Brain AI sets `Model: reasoning` on its own tasks. The Hands AI executes `standard` and `fast` tasks. The plan's Handoff section maintains context between them.
+**Pros:** Optimal cost efficiency, clear separation of concerns
+**Cons:** The executor may misinterpret ambiguous instructions — write very specific task descriptions
+
+---
+
 ## Troubleshooting
 
 | Problem | Solution |
@@ -287,3 +392,89 @@ bash .ai/scripts/handoff.sh [codex|claude|crush]
 | AI set status to `HUMAN_APPROVED` | **Rule violation** — revert the status, inform the human |
 | Handoff lost context | Check Handoff section of the plan, add more detail |
 | Execution stalled (BLOCKED) | AI explains the reason, human decides how to proceed |
+
+---
+
+## Token Optimization
+
+AI coding agents consume tokens on every session — and most of the waste comes from context files loaded automatically before you even type a prompt. This section helps you audit and reduce that cost.
+
+### 1. Context Audit Checklist
+
+Run this audit periodically (especially as your project grows):
+
+- [ ] Count total lines loaded per session: `wc -l CLAUDE.md AGENTS.md .claude/CLAUDE.md MEMORY.md`
+- [ ] Check for `@references` in CLAUDE.md — each `@file` expands inline (hidden token cost)
+- [ ] Identify duplicated content between files — same info in two files = double the tokens
+- [ ] **Rule: each piece of information should exist in exactly ONE file**
+- [ ] **Rule: MEMORY.md should only contain what doesn't exist anywhere else**
+- [ ] Target: under 150 lines total across all auto-loaded files
+
+### 2. What Loads When (by tool)
+
+| File | Claude Code | Codex CLI | When |
+|------|-------------|-----------|------|
+| `CLAUDE.md` (root) | ✅ always | — | Every session |
+| `.claude/CLAUDE.md` | ✅ always | — | Every session |
+| `AGENTS.md` (root) | — | ✅ always | Every session |
+| `MEMORY.md` | ✅ always | — | Every session |
+| `@file` references | ✅ expanded inline | — | When parent file loads |
+| Skills (`.claude/skills/`) | On demand | — | Only when invoked (free until used) |
+| Hooks (`.claude/hooks.json`) | Per event | — | Each "prompt" hook = 1 API call |
+
+**Key insight**: Skills cost zero tokens until invoked. Move detailed guides from CLAUDE.md/AGENTS.md into skills — they load on demand instead of every session.
+
+### 3. Compaction Strategies
+
+- **Terse, imperative style** — not prose. "Use snake_case for DB columns" not "We follow the convention of using snake_case for all database column names"
+- **Reference by path, don't inline** — instead of pasting a 50-line code example, write "Follow pattern in `src/modules/products/products.service.ts`"
+- **One file per concern** — project rules in CLAUDE.md, memory in MEMORY.md, workflow in `.ai/SETUP.md`. No overlap.
+- **Remove stale content** — old session history, completed TODOs, resolved decisions. If it's done, delete it.
+- **Move detailed guides to skills** — a 200-line coding standards doc costs tokens every session as CLAUDE.md, but costs zero as a skill until invoked
+
+### 4. Hook Optimization
+
+Each hook with `"type": "prompt"` makes a separate API call to the model. Three hooks on the same event = three API calls per trigger.
+
+- **Unify hooks on the same event** — combine 3 Write validators into 1 prompt that checks all 3 things
+- **Remove SessionStart hooks** if CLAUDE.md already covers the same context
+- **Remove UserPromptSubmit hooks** for rare events — a commit format hook runs on 100% of messages but is useful for 1%
+- **Prefer PreToolUse over UserPromptSubmit** — it only fires when the AI actually does something, not on every message
+
+**Before:**
+```
+PreToolUse (Write): style validator     → 1 API call
+PreToolUse (Write): i18n validator      → 1 API call
+PreToolUse (Write): a11y validator      → 1 API call
+UserPromptSubmit: commit format         → 1 API call (every message)
+SessionStart: load context              → 1 API call
+─────────────────────────────────────────
+Total: up to 4 extra calls per turn
+```
+
+**After:**
+```
+PreToolUse (Write|Edit): unified validator → 1 API call (only on writes)
+─────────────────────────────────────────
+Total: 0-1 extra calls per turn
+```
+
+### 5. Model Routing Strategy
+
+Not every task needs the most powerful (expensive) model. MuAiFlow plans include a `Model` field per task with three tiers:
+
+| Tier | Use for | Examples |
+|------|---------|----------|
+| **reasoning** | Architecture, planning, complex debugging, security review | "Design the auth flow", "Debug race condition" |
+| **standard** | Business logic, endpoints, integration, normal implementation | "Implement user CRUD", "Add API endpoint" |
+| **fast** | Boilerplate, styles, tests, i18n, documentation, mocks | "Generate translation file", "Write unit tests" |
+
+Map tiers to your provider's models in your project's CLAUDE.md or AGENTS.md. Example mapping:
+
+```
+reasoning → your strongest model (for critical thinking)
+standard  → your default model (for daily work)
+fast      → your cheapest model (for mechanical tasks)
+```
+
+The planner AI sets the tier per task. The executor uses the mapping to pick the right model. This alone can reduce token costs by 40-60% on multi-task plans.
