@@ -1,8 +1,8 @@
 {
   "name": "muaiflow-file-ref",
   "displayName": "MuAiFlow File Reference",
-  "description": "Type @ in any .md file to get file path autocomplete from your workspace",
-  "version": "1.0.0",
+  "description": "Press Cmd+Alt+R in any .md file to pick a file path and insert it as @reference",
+  "version": "1.1.0",
   "publisher": "muaiflow",
   "engines": { "vscode": "^1.85.0" },
   "categories": ["Other"],
@@ -10,13 +10,27 @@
   "activationEvents": [],
   "main": "./out/extension.js",
   "contributes": {
+    "commands": [
+      {
+        "command": "muaiflow.insertFileRef",
+        "title": "MuAiFlow: Insert File Reference (@)"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "muaiflow.insertFileRef",
+        "key": "ctrl+alt+r",
+        "mac": "cmd+alt+r",
+        "when": "editorTextFocus && editorLangId == 'markdown'"
+      }
+    ],
     "configuration": {
       "title": "MuAiFlow File Reference",
       "properties": {
         "muaiflow.fileRef.include": {
           "type": "string",
           "default": "**/*.{ts,tsx,js,jsx,json,md,yml,yaml,sh,css,scss,sql,html}",
-          "description": "Glob pattern for files to include in @ autocomplete"
+          "description": "Glob pattern for files to include"
         },
         "muaiflow.fileRef.exclude": {
           "type": "string",
@@ -26,7 +40,7 @@
         "muaiflow.fileRef.includeDirectories": {
           "type": "boolean",
           "default": true,
-          "description": "Include directories in autocomplete suggestions"
+          "description": "Include directories in suggestions"
         }
       }
     }
