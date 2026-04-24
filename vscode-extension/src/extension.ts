@@ -15,6 +15,17 @@ function getWorkspaceRoot(): vscode.Uri | null {
   return folders[0].uri
 }
 
+/** Patterns that should never trigger a cache rebuild */
+const IGNORED_SEGMENTS = [
+  'node_modules', '.git', 'dist', 'out', '.next', 'build', '.cache',
+  '.turbo', '.parcel-cache', '__pycache__', '.tox', '.venv',
+]
+
+function isIgnoredPath(fsPath: string): boolean {
+  const segments = fsPath.split(path.sep)
+  return segments.some(s => IGNORED_SEGMENTS.includes(s))
+}
+
 async function buildFileList(): Promise<FileItem[]> {
   const rootUri = getWorkspaceRoot()
   if (!rootUri) return []
@@ -29,7 +40,8 @@ async function buildFileList(): Promise<FileItem[]> {
   const includePattern = new vscode.RelativePattern(rootUri, '**/*')
   const excludePattern = `{${excludeRaw}}`
 
-  const uris = await vscode.workspace.findFiles(includePattern, excludePattern, 15000)
+  // Reduced from 15000 → 5000 to lower memory footprint
+  const uris = await vscode.workspace.findFiles(includePattern, excludePattern, 5000)
 
   const items: FileItem[] = []
   const seenDirs = new Set<string>()
@@ -93,9 +105,20 @@ function invalidateCache() {
   cachePromise = null
 }
 
-function refreshCache() {
-  invalidateCache()
-  getFiles().catch(() => {})
+/**
+ * Debounced cache refresh — collapses rapid file-system events
+ * (npm install, git checkout, builds) into a single rescan.
+ */
+let refreshTimer: ReturnType<typeof setTimeout> | null = null
+const REFRESH_DEBOUNCE_MS = 2000
+
+function debouncedRefreshCache() {
+  if (refreshTimer) clearTimeout(refreshTimer)
+  refreshTimer = setTimeout(() => {
+    refreshTimer = null
+    invalidateCache()
+    // Don't eagerly rebuild — let the next getFiles() call do it (lazy)
+  }, REFRESH_DEBOUNCE_MS)
 }
 
 async function showFilePicker(editor: vscode.TextEditor) {
@@ -157,7 +180,8 @@ async function handleAtTrigger(editor: vscode.TextEditor, atPosition: vscode.Pos
 }
 
 export function activate(context: vscode.ExtensionContext) {
-  getFiles().catch(() => {})
+  // LAZY: don't scan on activation — only scan when the user actually needs the picker
+  // (removed: getFiles().catch(() => {}))
 
   context.subscriptions.push(
     vscode.commands.registerCommand('muaiflow.insertFileRef', () => {
@@ -196,20 +220,34 @@ export function activate(context: vscode.ExtensionContext) {
     })
   )
 
+  // Watcher: only invalidate cache (debounced), and skip ignored paths
   const watcher = vscode.workspace.createFileSystemWatcher('**/*')
-  watcher.onDidCreate(() => refreshCache())
-  watcher.onDidDelete(() => refreshCache())
+
+  const onFsEvent = (uri: vscode.Uri) => {
+    if (isIgnoredPath(uri.fsPath)) return
+    debouncedRefreshCache()
+  }
+
+  watcher.onDidCreate(onFsEvent)
+  watcher.onDidDelete(onFsEvent)
+  // Also handle renames (shows as create+delete, but explicit rename events come here)
+  watcher.onDidChange(onFsEvent)
   context.subscriptions.push(watcher)
 
   context.subscriptions.push(
     vscode.workspace.onDidChangeConfiguration(e => {
       if (e.affectsConfiguration('muaiflow.fileRef')) {
-        refreshCache()
+        invalidateCache()
+        // Lazy: don't rebuild immediately — next getFiles() call will do it
       }
     })
   )
 }
 
 export function deactivate() {
+  if (refreshTimer) {
+    clearTimeout(refreshTimer)
+    refreshTimer = null
+  }
   invalidateCache()
 }
