@@ -182,6 +182,8 @@ npm run lint
 # [specific manual step from this plan]
 ```
 
+> Note: If a build, test, lint, or check stalls or fails only in a restricted or sandboxed environment, rerun the exact same command with elevated permissions or outside the restriction before marking the plan as `BLOCKED`. If it passes, record that the issue was environmental. Example: Next.js/Turbopack stuck at `Creating an optimized production build ...`.
+
 ---
 
 ## Validation (other AI)

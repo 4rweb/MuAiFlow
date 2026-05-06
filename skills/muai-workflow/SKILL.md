@@ -72,8 +72,11 @@ DRAFT → AI_REVIEWED → HUMAN_APPROVED → EXECUTING → DONE
 2. Follow task dependency order
 3. Mark acceptance criteria as done after each task
 4. Run verification commands after each task
-5. If blocked, set `status: BLOCKED` and explain why
-6. After all tasks: run Final Verification, set `status: DONE`
+5. If a build, test, lint, or check stalls or fails only in a restricted or sandboxed environment, re-run the exact same command with elevated permissions or outside the restriction before treating it as a project failure
+6. If blocked, set `status: BLOCKED` and explain why
+7. After all tasks: run Final Verification, set `status: DONE`
+
+Use Next.js/Turbopack stuck at `Creating an optimized production build ...` only as an example of this rule, not as the main case.
 
 ## Model Tiers (per task)
 

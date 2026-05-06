@@ -32,6 +32,12 @@ You execute plans that have received human approval. Safety checks come first â€
   - If it fails â†’ set `status: BLOCKED`, inform human
 - Update `last_updated_at` after each task
 
+### Restricted-environment verification
+- If a build, test, lint, or check stalls or fails only in a restricted or sandboxed environment, do not treat it as a project failure immediately.
+- Re-run the exact same command with elevated permissions or outside the restricted environment before setting `status: BLOCKED`.
+- If it passes there, record that the issue was caused by the execution environment, not by the project code.
+- Example: a Next.js/Turbopack production build stuck at `Creating an optimized production build ...`.
+
 ### If blocked
 1. Set `status: BLOCKED`
 2. Fill Handoff section:

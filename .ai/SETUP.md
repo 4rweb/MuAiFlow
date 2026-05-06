@@ -405,6 +405,7 @@ Hands AI (standard/fast tier):
 | AI doesn't follow the format | Point explicitly to `TEMPLATE.md` |
 | AI set status to `HUMAN_APPROVED` | **Rule violation** — revert the status, inform the human |
 | Handoff lost context | Check Handoff section of the plan, add more detail |
+| Build/check stalls or fails only in a restricted or sandboxed environment | Re-run the same command with elevated permissions or outside the restricted environment before treating it as a project failure. Example: Next.js/Turbopack stuck at `Creating an optimized production build ...` |
 | Execution stalled (BLOCKED) | AI explains the reason, human decides how to proceed |
 
 ---

@@ -52,6 +52,9 @@ Be honest about severity. High risk doesn't block — it informs the human.
 ### Test Strategy
 Every task with business logic needs a test. Specify which test and where.
 
+### Restricted-environment verification
+If the plan involves builds, checks, or tests that may behave differently in a restricted or sandboxed environment, include a verification note that the exact same command must be re-run with elevated permissions or outside the restriction before being treated as a project failure. Use Next.js/Turbopack stuck at `Creating an optimized production build ...` only as an example.
+
 ### Rollback
 If there's no simple rollback, explain why.
 

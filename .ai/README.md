@@ -83,5 +83,6 @@ bash .ai/scripts/handoff.sh [ai-name]
 2. If `human_approved_by` is empty → AI must stop before executing
 3. Cross-review is required for: DB changes, auth, external APIs, refactors > 5 files
 4. Run `handoff.sh` before switching AI tools
+5. If a build/check fails only in a restricted environment, re-run the exact same command outside the restriction before treating it as a project failure (for example, Next.js/Turbopack stuck at `Creating an optimized production build ...`)
 
 Full documentation: `.ai/SETUP.md`

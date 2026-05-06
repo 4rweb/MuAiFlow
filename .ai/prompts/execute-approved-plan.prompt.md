@@ -35,6 +35,13 @@ description: Prompt to execute a plan after human approval
   - If it fails, change status to `BLOCKED` and inform the human
 - Update `last_updated_at` in the frontmatter after each task
 
+### Restricted-environment verification note
+
+- If a build, test, lint, or check stalls or fails only in a restricted or sandboxed environment, do not classify it as a project failure immediately.
+- Re-run the exact same command with elevated permissions or outside the restricted environment before marking the task or final verification as `BLOCKED`.
+- If it passes there, record the verification as approved and note that the failure was caused by the execution environment, not by the project code.
+- Example: a Next.js/Turbopack production build stuck at `Creating an optimized production build ...` should be treated with this rule.
+
 ### If you encounter a blocker
 
 1. Change `status` to `BLOCKED` in the frontmatter

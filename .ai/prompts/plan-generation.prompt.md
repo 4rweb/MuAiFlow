@@ -34,6 +34,7 @@ You will generate an implementation plan. Follow the template at `.ai/plans/TEMP
 - **Pre-conditions**: Things that must be ready BEFORE starting. Include commands to verify they're ready.
 - **Impact & Risks**: Be honest. High risk doesn't block the plan, but it informs the human.
 - **Test Strategy**: Every task with business logic needs a test. Say which test and where.
+- **Restricted-environment verification**: If the plan involves builds, checks, or tests that may behave differently in a restricted or sandboxed environment, include a verification note that the exact same command must be re-run with elevated permissions or outside the restriction before being treated as a project failure. Use Next.js/Turbopack stuck at `Creating an optimized production build ...` only as an example, not as the main rule.
 - **Rollback**: If there's no simple rollback strategy, explain why.
 - **Tasks**: Each task must have explicit dependencies. If T2 depends on T1, say so. Use low/medium/high complexity honestly.
 
