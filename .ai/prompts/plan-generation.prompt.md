@@ -40,6 +40,7 @@ You will generate an implementation plan. Follow the template at `.ai/plans/TEMP
 ### Files cited in the plan
 
 For **each file** listed in the tasks section:
+
 - Confirm the path exists (use `ls`, `cat`, or equivalent)
 - If it needs to be created, confirm the parent directory exists
 - If it needs to be modified, read the current file and ensure the change makes sense
@@ -55,4 +56,7 @@ For **each file** listed in the tasks section:
 - Set `status` to `DRAFT` in the frontmatter
 - Fill `last_updated_at`
 - In the Handoff section, fill: `Last AI`, `Next step` = "awaiting validation from another AI"
-- Notify the human with the exact plan path, for example: "Plan generated at `.ai/plans/tracked/YYYY-MM-DD-title.md`, status DRAFT. Recommend asking another AI to validate using `.ai/prompts/multi-ai-review.prompt.md`."
+- Notify the human with the exact plan path using project-relative file refs, for example: `Plan generated at @.ai/plans/tracked/YYYY-MM-DD-title.md, status DRAFT.`
+- Add a final `Copy/paste to reviewer AI:` block with the reviewer instruction file and the exact plan path, for example:
+  - `Copy/paste to reviewer AI:`
+  - `Follow @.ai/prompts/multi-ai-review.prompt.md to validate @.ai/plans/tracked/YYYY-MM-DD-title.md`
